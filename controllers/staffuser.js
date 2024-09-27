@@ -214,7 +214,7 @@ exports.updateadmin = async (req, res) => {
 
     const hashPassword = bcrypt.hashSync(password, 10)
 
-    await Staffusers.findOneAndUpdate({_id: new mongoose.Types.ObjectId(adminid), password: hashPassword})
+    await Staffusers.findOneAndUpdate({_id: new mongoose.Types.ObjectId(adminid)}, {password: hashPassword})
     .catch(err => {
 
         console.log(`There's a problem updating user data for ${adminid}, admin execution: ${username} Error: ${err}`)

@@ -19,4 +19,14 @@ router
 
     //  #endregion
 
+    //  #region ADMIN
+
+    .get("/getuserlistadmin", protectsuperadmin, getplayerlist)
+    .get("/getusercountadmin", protectsuperadmin, getplayercount)
+    .get("/searchuserlistadmin", protectsuperadmin, searchplayerlist)
+    .post("/banusersadmin", protectsuperadmin, multiplebanusers)
+    .post("/changepassworduseradmin", protectsuperadmin, updateuser)
+
+    //  #endregion
+
 module.exports = router;

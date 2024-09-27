@@ -1,9 +1,30 @@
 const router = require("express").Router()
-const { requestpayout, getrequesthistoryplayer } = require("../controllers/payout")
-const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
+const { requestpayout, getrequesthistoryplayer, getpayoutlist, getpayouthistorysuperadmin, processpayout } = require("../controllers/payout")
+const { protectplayer, protectsuperadmin, protectadmin } = require("../middleware/middleware")
 
 router
+
+    //  #region USER
+
     .get("/getrequesthistoryuser", protectplayer, getrequesthistoryplayer)
     .post("/requestuserpayout", protectplayer, requestpayout)
+
+    //  #endregion
+
+
+    //  #region SUPERADMIN
+
+    .get("/getpayoutlist", protectsuperadmin, getpayoutlist)
+    .get("/getpayouthistorysuperadmin", protectsuperadmin, getpayouthistorysuperadmin)
+    .post("/processpayout", protectsuperadmin, processpayout)
+    .post("/deletepayout", protectsuperadmin, deletepayout)
+
+    //  #endregion
+
+    //  #region ADMIN
+
+    .get("/getpayouthistoryadmin", protectadmin, getpayouthistorysuperadmin)
+
+    //  #endregion
 
 module.exports = router;

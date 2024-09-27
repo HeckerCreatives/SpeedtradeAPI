@@ -3,11 +3,27 @@ const { getpayingraph, getcommissiongraph, getproductgraph, getearningpayoutgrap
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 router
+
+    //  #region SUPERADMIN
+
     .get("/getpayingraph", protectsuperadmin, getpayingraph)
     .get("/getcommissiongraph", protectsuperadmin, getcommissiongraph)
     .get("/getminerbuygraph", protectsuperadmin, getproductgraph)
     .get("/getminerpayoutgraph", protectsuperadmin, getearningpayoutgraph)
     .get("/getunilevelpayoutgraph", protectsuperadmin, getunilevelpayoutgraph)
     .get("/getsales", protectsuperadmin, gettotalpayinperday)
+
+    //  #endregion
+
+    //  #region ADMIN
+
+    .get("/getpayingraphadmin", protectsuperadmin, getpayingraph)
+    .get("/getcommissiongraphadmin", protectsuperadmin, getcommissiongraph)
+    .get("/getminerbuygraphadmin", protectsuperadmin, getproductgraph)
+    .get("/getminerpayoutgraphadmin", protectsuperadmin, getearningpayoutgraph)
+    .get("/getunilevelpayoutgraphadmin", protectsuperadmin, getunilevelpayoutgraph)
+    .get("/getsalesadmin", protectsuperadmin, gettotalpayinperday)
+
+    //  #endregion
 
 module.exports = router;

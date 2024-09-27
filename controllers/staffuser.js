@@ -217,7 +217,7 @@ exports.updateadmin = async (req, res) => {
     await Staffusers.findOneAndUpdate({_id: new mongoose.Types.ObjectId(adminid), password: hashPassword})
     .catch(err => {
 
-        console.log(`There's a problem updating user data for ${staffusername}, admin execution: ${username} Error: ${err}`)
+        console.log(`There's a problem updating user data for ${adminid}, admin execution: ${username} Error: ${err}`)
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
     })
@@ -334,7 +334,7 @@ exports.searchadminlist = async (req, res) => {
     }
 
     if (status){
-        adminlistsearch["status"] = {status}
+        adminlistsearch["status"] = status
     }
 
     const adminlist = await Staffusers.find(adminlistsearch)

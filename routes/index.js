@@ -10,6 +10,7 @@ const routers = app => {
     app.use("/payout", require("./payout"))
     app.use("/analytics", require("./analytics"))
     app.use("/staffusers", require("./staffusers"))
+    app.use("/payin", require("./payin"))
 }
 
 module.exports = routers

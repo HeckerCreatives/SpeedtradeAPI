@@ -76,14 +76,27 @@ exports.changepassworduser = async (req, res) => {
 
 exports.getplayerlist = async (req, res) => {
     const {id, username} = req.user
-    const {page, limit} = req.query
+    const {usersearch, status, page, limit} = req.query
 
     const pageOptions = {
         page: parseInt(page) || 0,
         limit: parseInt(limit) || 10
     };
 
+    const userlistsearch = {}
+
+    if (usersearch){
+        userlistsearch["username"] = { $regex: new RegExp(adminusername, 'i') }
+    }
+
+    if (status){
+        userlistsearch["status"] = status
+    }
+
     const userlistpipeline = [
+        {
+            $match: userlistsearch
+        },
         {
             $facet: {
                 totalCount: [
@@ -244,6 +257,100 @@ exports.getplayercount = async (req, res) => {
     }
 
     return res.json({message: "success", data: data})
+}
+
+exports.updateuser = async (req, res) => {
+    const {id, username} = req.user
+    const {userid, password} = req.body
+
+    if (password == ""){
+        return res.status(400).json({ message: "failed", data: "Please complete the form first before saving!" })
+    }
+
+    const hashPassword = bcrypt.hashSync(password, 10)
+
+    await Users.findOneAndUpdate({_id: new mongoose.Types.ObjectId(userid)}, {password: hashPassword})
+    .catch(err => {
+
+        console.log(`There's a problem updating user data for ${userid}, admin execution: ${username} Error: ${err}`)
+
+        return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
+    })
+
+    return res.json({message: "success"})
+}
+
+exports.searchplayerlist = async (req, res) => {
+    const {id, username} = req.user
+    const {playerusername} = req.query
+
+    const userlistpipeline = [
+        {
+            $match: {
+                username: { $regex: new RegExp(playerusername, 'i') }
+            }
+        },
+        {
+            $facet: {
+                data: [
+                    {
+                        $lookup: {
+                            from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
+                            localField: "_id",
+                            foreignField: "owner",
+                            as: "userDetails"
+                        }
+                    },
+                    {
+                        $lookup: {
+                            from: "users", // Assuming the collection name for Users is "users"
+                            localField: "referral",
+                            foreignField: "_id",
+                            as: "referredUser"
+                        }
+                    },
+                    {
+                        $project: {
+                            username: 1,
+                            email: { $arrayElemAt: ["$userDetails.email", 0] },
+                            referralUsername: { $arrayElemAt: ["$referredUser.username", 0] },
+                            createdAt: 1,
+                            status: 1
+                        }
+                    }
+                ]
+            }
+        }
+    ]
+
+    const userlist = await Users.aggregate(userlistpipeline)
+    .catch(err => {
+        console.log(`There's a problem getting users list for ${username}. Error: ${err}`)
+        return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
+    })
+
+    const data = {
+        totalPages: 0,
+        userlist: []
+    }
+
+    userlist[0].data.forEach(value => {
+        const {_id, username, status, createdAt, email, referralUsername} = value
+
+        data["userlist"].push(
+            {
+                id: _id,
+                username: username,
+                email: email,
+                referralUsername: referralUsername,
+                status: status,
+                createdAt: createdAt
+            }
+        )
+    })
+
+    return res.json({message: "success", data: data})
+
 }
 
 //  #endregion

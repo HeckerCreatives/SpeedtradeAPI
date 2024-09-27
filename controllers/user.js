@@ -184,21 +184,6 @@ exports.getuserdetailssuperadmin = async (req, res) => {
     return res.json({message: "success", data: data})
 }
 
-exports.banunbanuser = async (req, res) => {
-    const {id, username} = req.user
-    const {status, userid} = req.body
-
-    await Users.findOneAndUpdate({_id: new mongoose.Types.ObjectId(userid)}, {status: status})
-    .catch(err => {
-
-        console.log(`There's a problem banning or unbanning user for ${username}, player: ${userid}, status: ${status} Error: ${err}`)
-
-        return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
-    })
-
-    return res.json({message: "success"})
-}
-
 exports.multiplebanusers = async (req, res) => {
     const {id, username} = req.user;
     const {userlist, status} = req.body
@@ -227,79 +212,6 @@ exports.multiplebanusers = async (req, res) => {
     })
 
     return res.json({message: "success"})
-}
-
-exports.searchplayerlist = async (req, res) => {
-    const {id, username} = req.user
-    const {playerusername, page, limit} = req.query
-
-    const userlistpipeline = [
-        {
-            $match: {
-                username: { $regex: new RegExp(playerusername, 'i') }
-            }
-        },
-        {
-            $facet: {
-                data: [
-                    {
-                        $lookup: {
-                            from: "userdetails", // Assuming the collection name for UserDetails is "userdetails"
-                            localField: "_id",
-                            foreignField: "owner",
-                            as: "userDetails"
-                        }
-                    },
-                    {
-                        $lookup: {
-                            from: "users", // Assuming the collection name for Users is "users"
-                            localField: "referral",
-                            foreignField: "_id",
-                            as: "referredUser"
-                        }
-                    },
-                    {
-                        $project: {
-                            username: 1,
-                            email: { $arrayElemAt: ["$userDetails.email", 0] },
-                            referralUsername: { $arrayElemAt: ["$referredUser.username", 0] },
-                            createdAt: 1,
-                            status: 1
-                        }
-                    }
-                ]
-            }
-        }
-    ]
-
-    const userlist = await Users.aggregate(userlistpipeline)
-    .catch(err => {
-        console.log(`There's a problem getting users list for ${username}. Error: ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem getting your user details. Please contact customer support." })
-    })
-
-    const data = {
-        totalPages: 0,
-        userlist: []
-    }
-
-    userlist[0].data.forEach(value => {
-        const {_id, username, status, createdAt, email, referralUsername} = value
-
-        data["userlist"].push(
-            {
-                id: _id,
-                username: username,
-                email: email,
-                referralUsername: referralUsername,
-                status: status,
-                createdAt: createdAt
-            }
-        )
-    })
-
-    return res.json({message: "success", data: data})
-
 }
 
 exports.getplayercount = async (req, res) => {

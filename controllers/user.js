@@ -150,7 +150,7 @@ exports.getplayerlist = async (req, res) => {
     })
 
     const data = {
-        totalPages: Math.ceil(userlist[0].totalCount[0].total / pageOptions.limit),
+        totalPages: userlist.length > 0 ? Math.ceil(userlist[0].totalCount[0].total / pageOptions.limit) : 0,
         userlist: []
     }
 

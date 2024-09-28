@@ -16,6 +16,7 @@ router
 
     //  #region ADMIN
 
+    .get("/getadmindashboard", protectsuperadmin, getsadashboard)
     .post("/changepassadmin", protectsuperadmin, changepass)
 
     //  #endregion

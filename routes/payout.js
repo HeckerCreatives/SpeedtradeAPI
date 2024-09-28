@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { requestpayout, getrequesthistoryplayer, getpayoutlist, getpayouthistorysuperadmin, processpayout } = require("../controllers/payout")
+const { requestpayout, getrequesthistoryplayer, getpayoutlist, getpayouthistorysuperadmin, processpayout, deletepayout } = require("../controllers/payout")
 const { protectplayer, protectsuperadmin, protectadmin } = require("../middleware/middleware")
 
 router

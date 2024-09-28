@@ -204,11 +204,10 @@ exports.multiplebanusers = async (req, res) => {
     const data = [];
 
     userlist.forEach(tempdata => {
-        const {userid, banreason} = tempdata
         data.push({
             updateOne: {
-                filter: { _id: new mongoose.Types.ObjectId(userid) },
-                update: { status: status, banreason: banreason }
+                filter: { _id: new mongoose.Types.ObjectId(tempdata) },
+                update: { status: status }
             }
         })
     })

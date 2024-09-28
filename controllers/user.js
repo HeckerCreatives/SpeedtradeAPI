@@ -86,7 +86,7 @@ exports.getplayerlist = async (req, res) => {
     const userlistsearch = {}
 
     if (usersearch){
-        userlistsearch["username"] = { $regex: new RegExp(adminusername, 'i') }
+        userlistsearch["username"] = { $regex: new RegExp(usersearch, 'i') }
     }
 
     if (status){

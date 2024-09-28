@@ -179,7 +179,6 @@ exports.multiplebanstaffusers = async (req, res) => {
     const data = [];
 
     staffuserlist.forEach(tempdata => {
-        console.log(tempdata)
         data.push({
             updateOne: {
                 filter: { _id: new mongoose.Types.ObjectId(tempdata) },

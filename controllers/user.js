@@ -141,6 +141,7 @@ exports.getplayerlist = async (req, res) => {
         }
     ]
 
+
     const userlist = await Users.aggregate(userlistpipeline)
     .catch(err => {
 
@@ -148,6 +149,9 @@ exports.getplayerlist = async (req, res) => {
 
         return res.status(400).json({ message: "bad-request", data: "There's a problem getting you user details. Please contact customer support." })
     })
+
+    
+    console.log(userlist[0].data)
 
     const data = {
         totalPages: userlist[0].totalCount.length > 0 ? Math.ceil(userlist[0].totalCount[0].total / pageOptions.limit) : 0,

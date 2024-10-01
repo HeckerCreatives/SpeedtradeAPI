@@ -80,7 +80,7 @@ exports.getrequesthistoryplayer = async (req, res) => {
 
         console.log(`Failed to count documents Payin data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
@@ -408,11 +408,11 @@ exports.processpayout = async (req, res) => {
 
         console.log(`Failed to get Payout data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     if (payoutdata.status != "processing"){
-        return res.status(401).json({ message: 'failed', data: `You already processed this payout` })
+        return res.status(400).json({ message: 'failed', data: `You already processed this payout` })
     }
 
     await Payout.findOneAndUpdate({_id: new mongoose.Types.ObjectId(payoutid)}, {status: status, processby: new mongoose.Types.ObjectId(id)}, {new: true})
@@ -425,7 +425,7 @@ exports.processpayout = async (req, res) => {
 
         console.log(`Failed to count documents Payin data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     if (status == "reject"){
@@ -434,7 +434,7 @@ exports.processpayout = async (req, res) => {
 
             console.log(`Failed to process Payout data for ${username}, player: ${playerid}, payinid: ${payinid} error: ${err}`)
     
-            return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
         })
     }
     else{
@@ -446,7 +446,7 @@ exports.processpayout = async (req, res) => {
         const analyticsadd = await addanalytics(playerid, "", `payout${wallettype}`, `Payout to user ${playerid} with a value of ${payoutvalue} and admin fee of ${adminfee} processed by ${username}`, payoutvalue)
 
         if (analyticsadd != "success"){
-            return res.status(401).json({ message: 'failed', data: `There's a problem saving payin in analytics history. Please contact customer support for more details` })
+            return res.status(400).json({ message: 'failed', data: `There's a problem saving payin in analytics history. Please contact customer support for more details` })
         }
     }
 
@@ -465,7 +465,7 @@ exports.deletepayout = async (req, res) => {
 
         console.log(`Failed to get Payout data for ${payoutid}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     if (!payoutdata){
@@ -477,7 +477,7 @@ exports.deletepayout = async (req, res) => {
 
         console.log(`Failed to delete Payout data for ${payoutid}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     console.log(`Payout request id: ${payoutdata._id}  owner: ${payoutdata.owner}  type: ${payoutdata.type}  amount: ${payoutdata.value}`)
@@ -487,7 +487,7 @@ exports.deletepayout = async (req, res) => {
 
         console.log(`Failed to update userwallet data for ${payoutdata.owner} with value ${payoutdata.value}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     return res.json({message: "success"})

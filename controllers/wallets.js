@@ -12,7 +12,7 @@ exports.playerwallets = async (req, res) => {
 
         console.log(`Failed to get dashboard wallet data for ${data.owner}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const data = {}

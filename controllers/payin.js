@@ -31,7 +31,7 @@ exports.getpayinhistoryplayer = async (req, res) => {
 
         console.log(`Failed to get payin list data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const totalPages = await Payin.countDocuments({owner: new mongoose.Types.ObjectId(id)})
@@ -40,7 +40,7 @@ exports.getpayinhistoryplayer = async (req, res) => {
 
         console.log(`Failed to count documents Payin data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
@@ -79,11 +79,11 @@ exports.sendfiattoplayer = async (req, res) => {
 
         console.log(`Failed to get player data for ${username}, player: ${playerusername} error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     if (!player){
-        return res.status(401).json({ message: 'failed', data: `The account does not exist! Please enter the correct username` })
+        return res.status(400).json({ message: 'failed', data: `The account does not exist! Please enter the correct username` })
     }
 
     await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(player._id), type: "creditwallet"}, {$inc: {amount: amount}})
@@ -91,25 +91,25 @@ exports.sendfiattoplayer = async (req, res) => {
 
         console.log(`Failed to add wallet fiat player data for ${username}, player: ${playerusername}, amount: ${amount}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const addpayin = await createpayin(player._id, amount, id, "done")
 
     if (addpayin != "success"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem creating payin in wallet history. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem creating payin in wallet history. Please contact customer support for more details` })
     }
     
     const wallethistoryadd = await addwallethistory(player._id, "creditwallet", amount, id, "")
 
     if (wallethistoryadd.message != "success"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem saving payin in wallet history. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem saving payin in wallet history. Please contact customer support for more details` })
     }
 
     const analyticsadd = await addanalytics(player._id, wallethistoryadd.data.transactionid, "payincreditwallet", `Add balance to user ${player._id} with a value of ${amount} processed by ${username}`, amount)
 
     if (analyticsadd != "success"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem saving payin in analytics history. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem saving payin in analytics history. Please contact customer support for more details` })
     }
 
     return res.json({message: "success"})
@@ -227,7 +227,7 @@ exports.getpayinhistorysuperadmin = async (req, res) => {
     const payinhistory = await Payin.aggregate(payinpipelinelist)
     .catch(err => {
         console.log(`Failed to get payin list data for ${username}, error: ${err}`);
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` });
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` });
     });
 
     const totalPages = payinhistory[0].totalPages[0]?.count || 0;

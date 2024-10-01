@@ -343,7 +343,7 @@ exports.searchadminlist = async (req, res) => {
     .catch(err => {
         console.log(`Failed to get admin list data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const totalPages = await Staffusers.countDocuments(adminlistsearch)
@@ -352,7 +352,7 @@ exports.searchadminlist = async (req, res) => {
 
         console.log(`Failed to count documents staff users data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)

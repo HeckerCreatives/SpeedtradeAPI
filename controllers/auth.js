@@ -141,7 +141,7 @@ exports.authlogin = async(req, res) => {
     .then(async user => {
         if (user && (await user.matchPassword(password))){
             if (user.status != "active"){
-                return res.status(401).json({ message: 'failed', data: `Your account had been ${user.status}! Please contact support for more details.` });
+                return res.status(400).json({ message: 'failed', data: `Your account had been ${user.status}! Please contact support for more details.` });
             }
 
             const token = await encrypt(privateKey)
@@ -173,7 +173,7 @@ exports.authlogin = async(req, res) => {
                 
                 if (staffuser && (await staffuser.matchPassword(password))){
                     if (staffuser.status != "active"){
-                        return res.status(401).json({ message: 'failed', data: `Your account had been ${staffuser.status}! Please contact support for more details.` });
+                        return res.status(400).json({ message: 'failed', data: `Your account had been ${staffuser.status}! Please contact support for more details.` });
                     }
 
                     const token = await encrypt(privateKey)
@@ -265,7 +265,7 @@ exports.getreferralusername = async (req, res) => {
     const {id} = req.query
 
     if (!id){
-        return res.status(401).json({message: "failed", data: "No referral found! Please don't tamper with the URL."})
+        return res.status(400).json({message: "failed", data: "No referral found! Please don't tamper with the URL."})
     }
 
     const user = await Users.findOne({_id: new mongoose.Types.ObjectId(id)})

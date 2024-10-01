@@ -36,11 +36,11 @@ exports.buyminer = async (req, res) => {
     const wallet = await walletbalance("creditwallet", id)
 
     if (wallet == "failed"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     }
 
     if (wallet == "nodata"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     }
 
     if (wallet < priceminer){
@@ -60,13 +60,13 @@ exports.buyminer = async (req, res) => {
     const buy = await reducewallet("creditwallet", priceminer, id)
 
     if (buy != "success"){
-        return res.status(401).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+        return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
     }
 
     const unilevelrewards = await sendcommissionunilevel(priceminer, id, miner.type)
 
     if (unilevelrewards != "success"){
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     }
     
     await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
@@ -111,7 +111,7 @@ exports.getinventory = async (req, res) => {
 
         console.log(`Failed to count documents inventory data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
@@ -229,7 +229,7 @@ exports.getbuyhistory = async (req, res) => {
 
         console.log(`Failed to count documents inventory history data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
@@ -285,7 +285,7 @@ exports.getclaimhistory = async (req, res) => {
 
         console.log(`Failed to count documents inventory history data for ${username}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
@@ -407,7 +407,7 @@ exports.getplayerinventory = async (req, res) => {
 
         console.log(`Failed to count documents inventory data for ${playerid}, error: ${err}`)
 
-        return res.status(401).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     })
 
     const pages = Math.ceil(totalPages / pageOptions.limit)

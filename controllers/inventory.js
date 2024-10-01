@@ -15,7 +15,7 @@ exports.buyminer = async (req, res) => {
 
     if (type == "swift_lane"){
         //  ADD CONDITION HERE IF CLAIM QUICK MINER
-        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner"})
+        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Claim Quick Miner"})
         .then(data => data)
 
         if (!tempminer){
@@ -25,7 +25,7 @@ exports.buyminer = async (req, res) => {
 
     else if (type == "rapid_lane"){
         //  ADD CONDITION HERE IF CLAIM SWIFT LANE
-        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane"})
+        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Claim Rapid Lane"})
         .then(data => data)
 
         if (!tempminer){
@@ -205,7 +205,7 @@ exports.getbuyhistory = async (req, res) => {
         limit: parseInt(limit) || 10
     }
 
-    const history = await Inventoryhistory.find({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Buy Swift Lane"}, {type: "Buy Rapid Lane"}]})
+    const history = await Inventoryhistory.find({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Buy Switf Lane"}, {type: "Buy Rapid Lane"}]})
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
     .sort({'createdAt': -1})

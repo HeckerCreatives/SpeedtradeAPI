@@ -54,8 +54,8 @@ exports.playerunilevel = async (req, res) => {
                             $expr: {
                                 $and: [
                                     { $or: [
-                                        { $eq: ["$type", "commissionbalance"] },
-                                        { $eq: ["$type", "directreferralbalance"] }
+                                        { $eq: ["$type", "commissionwallet"] },
+                                        { $eq: ["$type", "directcommissionwallet"] }
                                     ] },
                                     { $eq: ["$from", "$$userId"] },
                                     { $eq: ["$owner", new mongoose.Types.ObjectId(id)] }

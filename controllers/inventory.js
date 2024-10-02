@@ -279,7 +279,7 @@ exports.getclaimhistory = async (req, res) => {
         }})
     }
 
-    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Buy Swift Lane"}, {type: "Buy Rapid Lane"}]})
+    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Claim Switf Lane"}, {type: "Buy Rapid Lane"}]})
     .then(data => data)
     .catch(err => {
 

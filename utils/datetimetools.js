@@ -102,7 +102,7 @@ exports.RemainingTime = (startTime, claimDays) => {
     return remainingTimeSeconds;
 }
 
-function FormatDate(input) {
+exports.FormatDate = (input) => {
     // Create a new Date object
     const date = new Date(input);
 

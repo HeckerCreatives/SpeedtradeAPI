@@ -99,7 +99,7 @@ exports.getrequesthistoryplayer = async (req, res) => {
             grossamount: value,
             withdrawalfee: value * 0.10,
             netammount: value - (value * 0.10),
-            status: status == "processing" ? "In review" : `${status} (${FormatDate(updatedAt)})`
+            status: status == "processing" ? "In review" : status == "done" ? `Approved (${FormatDate(updatedAt)})` : `Rejected (${FormatDate(updatedAt)})`
         })
     })
 

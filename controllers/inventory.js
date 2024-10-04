@@ -343,37 +343,30 @@ exports.gettotalpurchased = async (req, res) => {
 }
 
 exports.getremainingunclaimedminer = async (req, res) => {
-    const {id} = req.user
+    const {id, username} = req.user
+    const miner = await Inventory.find({owner: id})
+    .sort({'createdAt': -1})
+    .then(data => data)
+    .catch(err => {
 
-    const totalEarnings = await Inventory.aggregate([
-        {
-            $match: {
-                owner: new mongoose.Types.ObjectId(id)
-            }
-        },
-        {
-          $project: {
-            earnings: {
-              $add: [
-                { $multiply: ["$price", "$profit"] },
-                "$price"
-              ]
-            }
-          }
-        },
-        {
-          $group: {
-            _id: null,
-            totalEarnings: { $sum: "$earnings" }
-          }
-        }
-      ]);
+        console.log(`Failed to get inventory data for ${username}, error: ${err}`)
 
-      const data = {
-        unclaimedearnings: totalEarnings.length > 0 ? totalEarnings[0].totalEarnings : 0
-      }
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+    })
 
-      return res.json({message: "success", data: data})
+    const data = {
+        unclaimed: 0
+    }
+
+    miner.forEach(dataminer => {
+        const {price, profit, duration, startdate} = dataminer
+
+        const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), (price * profit) + price)
+
+        data.unclaimed += earnings
+    })
+
+    return res.json({message: "success", data: data})
 }
 
 //  #endregion

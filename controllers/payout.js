@@ -4,6 +4,7 @@ const Userwallets = require("../models/Userwallets")
 const StaffUserwallets = require("../models/Staffuserwallet")
 const { addwallethistory } = require("../utils/wallethistorytools")
 const { addanalytics } = require("../utils/analyticstools")
+const { FormatDate } = require("../utils/datetimetools")
 
 //  #region USER
 
@@ -91,14 +92,14 @@ exports.getrequesthistoryplayer = async (req, res) => {
     }
 
     payouthistory.forEach(valuedata => {
-        const {owner, processby, status, value, type, createdAt} = valuedata
+        const {owner, processby, status, value, type, createdAt, updatedAt} = valuedata
 
         data.history.push({
             date: createdAt,
             grossamount: value,
             withdrawalfee: value * 0.10,
             netammount: value - (value * 0.10),
-            status: status == "processing" ? "In review" : status
+            status: status == "processing" ? "In review" : `${status} (${FormatDate(updatedAt)})`
         })
     })
 

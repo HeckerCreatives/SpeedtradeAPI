@@ -44,16 +44,15 @@ exports.getplayerwalletforadmin = async (req, res) => {
     })
 
     const data = {
-        userwallets: []
+        userwallets: {}
     }
 
     playerwallet.forEach(value => {
         const {type, amount} = value
 
-        data.userwallets.push({
-            type: type,
+        data.userwallets[type] = {
             amount: amount
-        })
+        }
     })
 
     return res.json({message: "success", data: data})

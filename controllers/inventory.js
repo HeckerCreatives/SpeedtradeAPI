@@ -373,7 +373,7 @@ exports.getremainingunclaimedminer = async (req, res) => {
 
 //  #region SUPERADMIN
 
-exports.getplayerinventory = async (req, res) => {
+exports.getplayerinventoryforsuperadmin = async (req, res) => {
     const {id, username} = req.user
     const {playerid, page, limit} = req.query
 

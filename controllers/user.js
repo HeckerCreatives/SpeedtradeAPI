@@ -356,4 +356,26 @@ exports.searchplayerlist = async (req, res) => {
 
 }
 
+exports.getuserdetailsbysuperadmin = async (req, res) => {
+    const {id, user} = req.user
+
+    const {userid} = req.query
+
+    const userdetails = await Users.findOne({_id: new mongoose.Types.ObjectId(userid)})
+    .populate({
+        path: "referral",
+        select: "username"
+    })
+    .then(data => data)
+    .catch(err => err)
+
+    const data = {
+        username: userdetails.username,
+        referral: userdetails.referral.username,
+        banstatus: userdetails.status
+    }
+
+    return res.json({message: "success", data: data})
+}
+
 //  #endregion

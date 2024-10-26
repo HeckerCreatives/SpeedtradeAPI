@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { getuserdata, getplayerlist, multiplebanusers, getplayercount, updateuser, searchplayerlist } = require("../controllers/user")
+const { getuserdata, getplayerlist, multiplebanusers, getplayercount, updateuser, searchplayerlist, getuserdetailsbysuperadmin } = require("../controllers/user")
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 router
@@ -14,6 +14,7 @@ router
     .get("/getuserlist", protectsuperadmin, getplayerlist)
     .get("/getusercount", protectsuperadmin, getplayercount)
     .get("/searchuserlist", protectsuperadmin, searchplayerlist)
+    .get("/getuserdetailsbysuperadmin", protectsuperadmin, getuserdetailsbysuperadmin)
     .post("/banusers", protectsuperadmin, multiplebanusers)
     .post("/changepassworduser", protectsuperadmin, updateuser)
 

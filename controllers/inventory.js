@@ -405,7 +405,9 @@ exports.getplayerinventoryforsuperadmin = async (req, res) => {
 
     const pages = Math.ceil(totalPages / pageOptions.limit)
 
-    const data = {}
+    const data = {
+        inventory: []
+    }
 
     let index = 0
 
@@ -415,7 +417,7 @@ exports.getplayerinventoryforsuperadmin = async (req, res) => {
         const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), (price * profit) + price)
         const remainingtime = RemainingTime(parseFloat(startdate), AddUnixtimeDay(startdate, duration))
 
-        data[index] = {
+        data.inventory[index] = {
             minerid: _id,
             type: type,
             buyprice: price,

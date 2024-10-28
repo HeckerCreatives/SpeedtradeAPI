@@ -68,7 +68,7 @@ exports.initialize = async (req, res) => {
     })
 
     if (maintenances.length <= 0){
-        await Maintenance.create({type: "payout", value: "0"})
+        await Maintenance.create({type: "payout", value: "1"})
     }
 
     console.log("Server Initialization Success")

@@ -3,6 +3,7 @@ const Users = require("../models/Users")
 const Staffusers = require("../models/Staffusers")
 const Userwallets = require("../models/Userwallets")
 const Userdetails = require("../models/Userdetails")
+const Maintenance = require("../models/Maintenance")
 
 exports.initialize = async (req, res) => {
 
@@ -57,6 +58,17 @@ exports.initialize = async (req, res) => {
             console.log(`There's a problem creating staff user data ${err}`)
             return
         })
+    }
+
+    const maintenances = await Maintenance.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting maintenance data ${err}`)
+        return
+    })
+
+    if (maintenances.length <= 0){
+        await Maintenance.create({type: "payout", value: "0"})
     }
 
     console.log("Server Initialization Success")

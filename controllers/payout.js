@@ -2,6 +2,7 @@ const { default: mongoose } = require("mongoose")
 const Payout = require("../models/Payout")
 const Userwallets = require("../models/Userwallets")
 const StaffUserwallets = require("../models/Staffuserwallet")
+const Maintenance = require("../models/Maintenance")
 const { addwallethistory } = require("../utils/wallethistorytools")
 const { addanalytics } = require("../utils/analyticstools")
 const { FormatDate } = require("../utils/datetimetools")
@@ -11,6 +12,17 @@ const { FormatDate } = require("../utils/datetimetools")
 exports.requestpayout = async (req, res) => {
     const {id, username} = req.user
     const {type, payoutvalue, paymentmethod, accountname, accountnumber} = req.body
+
+    if (payoutvalue < 500){
+        return res.status(400).json({message: "failed", data: "Minimum cashout is ₱500"})
+    }
+
+    const maintenances = await Maintenance.findOne({type: "payout"})
+    .then(data => data)
+
+    if (maintenances.value == "1"){
+        return res.status(400).json({message: "failed", data: "Cashout is available only in "})
+    }
 
     const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: type, status: "processing"})
     .then(data => data)

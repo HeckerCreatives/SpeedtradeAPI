@@ -510,7 +510,7 @@ exports.gettotalrequest = async (req, res) => {
     const commissionBalanceTotal = await Payout.aggregate([
         {
             $match: {
-                type: "commissionbalance",
+                type: "commissionwallet",
                 status: "processing"
             }
         },
@@ -522,10 +522,10 @@ exports.gettotalrequest = async (req, res) => {
         }
     ]);
 
-    const gameBalanceTotal = await Payout.aggregate([
+    const mineCoinTotal = await Payout.aggregate([
         {
             $match: {
-                type: "gamebalance",
+                type: "minecoinwallet",
                 status: "processing"
             }
         },
@@ -539,7 +539,7 @@ exports.gettotalrequest = async (req, res) => {
 
     return res.json({message: "success", data: {
         totalrequestcommission: commissionBalanceTotal.length > 0 ? (commissionBalanceTotal[0].totalAmount - (commissionBalanceTotal[0].totalAmount * 0.10)) : 0,
-        totalrequestgame: gameBalanceTotal.length > 0 ? (gameBalanceTotal[0].totalAmount - (gameBalanceTotal[0].totalAmount * 0.10)) : 0
+        totalrequestminecoin: mineCoinTotal.length > 0 ? (mineCoinTotal[0].totalAmount - (mineCoinTotal[0].totalAmount * 0.10)) : 0
     }})
 }
 

@@ -7,7 +7,7 @@ exports.minerdata = (type) => {
             type: "quick_miner",
             name: "Quick Miner",
             profit: 0.20,
-            duration: 0.000694444,
+            duration: 5,
             min: 500,
             max: 2000
         },
@@ -15,7 +15,7 @@ exports.minerdata = (type) => {
             type: "swift_lane",
             name: "Switf Lane",
             profit: 0.60,
-            duration: 0.000694444,
+            duration: 10,
             min: 2000,
             max: 20000
         },
@@ -23,7 +23,7 @@ exports.minerdata = (type) => {
             type: "rapid_lane",
             name: "Rapid Lane",
             profit: 1.5,
-            duration: 0.000694444,
+            duration: 20,
             min: 20000,
             max: 2000000
         }

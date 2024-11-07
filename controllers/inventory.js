@@ -41,7 +41,7 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
     })
 
-    if (totalminer.length > 0){
+    if (totalminer.length >= 2){
         return res.status(400).json({message: "failed", data: "You can only have a max of 2 active miners. Please complete either of the two to buy again."})
     }
 

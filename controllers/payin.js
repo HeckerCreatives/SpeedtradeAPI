@@ -138,7 +138,7 @@ exports.deletepayinplayersuperadmin = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem changing the transaction Please contact customer support!"})
     })
 
-    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(userid), type: "fiatbalance"}, {$inc: {amount: -transaction.value}})
+    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(userid), type: "minecoinwallet"}, {$inc: {amount: -transaction.value}})
     .catch(async err => {
         console.log(`There's a problem getting the changing the transaction ${transactionid}. Error: ${err}`)
 
@@ -147,7 +147,7 @@ exports.deletepayinplayersuperadmin = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem changing the transaction Please contact customer support!"})
     })
 
-    await deleteanalytics(transactionid)
+    await deleteanalytics(transaction._id)
 
     return res.json({message: "success"})
 }

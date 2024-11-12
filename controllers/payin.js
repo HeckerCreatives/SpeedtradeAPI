@@ -96,8 +96,11 @@ exports.sendfiattoplayer = async (req, res) => {
 
     const addpayin = await createpayin(player._id, amount, id, "done")
 
-    if (addpayin != "success"){
-        return res.status(400).json({ message: 'failed', data: `There's a problem creating payin in wallet history. Please contact customer support for more details` })
+    if (addpayin["message"] == null){
+        return res.status(400).json({ message: 'failed1', data: `There's a problem creating payin in wallet history. Please contact customer support for more details` })
+    }
+    else if (addpayin["message"] != "success"){
+        return res.status(400).json({ message: 'failed2', data: `There's a problem creating payin in wallet history. Please contact customer support for more details` })
     }
     
     const wallethistoryadd = await addwallethistory(player._id, "creditwallet", amount, id, "")
@@ -106,7 +109,7 @@ exports.sendfiattoplayer = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `There's a problem saving payin in wallet history. Please contact customer support for more details` })
     }
 
-    const analyticsadd = await addanalytics(player._id, wallethistoryadd.data.transactionid, "payincreditwallet", `Add balance to user ${player._id} with a value of ${amount} processed by ${username}`, amount)
+    const analyticsadd = await addanalytics(player._id, addpayin.data._id, "payincreditwallet", `Add balance to user ${player._id} with a value of ${amount} processed by ${username}`, amount)
 
     if (analyticsadd != "success"){
         return res.status(400).json({ message: 'failed', data: `There's a problem saving payin in analytics history. Please contact customer support for more details` })

@@ -176,3 +176,9 @@ exports.protectusers = async (req, res, next) => {
         return res.status(401).json({ message: 'Unauthorized', data: "You are not authorized to view this page. Please login the right account to view the page." });
     }
 }
+
+exports.captureIpAddress = async (req, res, next) => {
+    req.body.ipAddress = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+    next();
+  };
+  

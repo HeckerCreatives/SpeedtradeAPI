@@ -19,7 +19,7 @@ exports.buyminer = async (req, res) => {
         .then(data => data)
 
         if (!tempminer){
-            return res.status(400).json({ message: 'failed', data: `You need to finish Quick miner first before purchaisng Swift lane!` })
+            return res.status(400).json({ message: 'failed', data: `You need to finish Quick miner first before purchasing Swift lane!` })
         }
     }
 

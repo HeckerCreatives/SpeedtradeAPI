@@ -1,9 +1,9 @@
 const router = require("express").Router()
 const { authlogin, register, registerstaffs, getreferralusername, automaticlogin, logout } = require("../controllers/auth")
-const { protectsuperadmin, protectusers } = require("../middleware/middleware")
+const { protectsuperadmin, protectusers, captureIpAddress } = require("../middleware/middleware")
 
 router
-    .get("/login", authlogin)
+    .get("/login", captureIpAddress, authlogin)
     .get("/getreferralusername", getreferralusername)
     .get("/automaticlogin", protectusers, automaticlogin)
     .post("/register", register)

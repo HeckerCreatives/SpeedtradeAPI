@@ -6,3 +6,5 @@ const router = require("express").Router()
 router
  .get("/getminer", protectusers, getMiner)
  .post("/editminer", protectsuperadmin, editMiner)
+
+module.exports = router

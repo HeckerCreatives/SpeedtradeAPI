@@ -6,12 +6,13 @@ const { walletbalance, reducewallet, sendcommissionunilevel, addwallet } = requi
 const { DateTimeServerExpiration, DateTimeServer, AddUnixtimeDay, RemainingTime } = require("../utils/datetimetools")
 const { addanalytics } = require("../utils/analyticstools")
 const { addwallethistory } = require("../utils/wallethistorytools")
+const Maintenance = require("../models/Maintenance")
 
 //  #region USER
 
 exports.buyminer = async (req, res) => {
     const {id, username} = req.user
-    const {type, priceminer} = req.body
+    const {type, priceminer } = req.body
 
     if (type == "swift_lane"){
         //  ADD CONDITION HERE IF CLAIM QUICK MINER
@@ -32,6 +33,14 @@ exports.buyminer = async (req, res) => {
             return res.status(400).json({ message: 'failed', data: `You need to finish Swift lane first before purchaisng Rapid lane!` })
         }
     }
+
+    const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting b1t1 maintenance. Error: ${err}`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    })
 
     const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
     .then(data => data)
@@ -81,17 +90,45 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     }
     
-    await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
-    .catch(err => {
+    
+    if(b1t1 && b1t1.value === '1' && b1t1.type === 'b1t1'){
 
-        console.log(`Failed to miner inventory data for ${username} type: ${type}, error: ${err}`)
+        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+        .catch(err => {
+    
+            console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
+    
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        })
+        const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
 
-        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-    })
+        await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
 
-    const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name}`)
+        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+        .catch(err => {
+    
+            console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
+    
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        })
+        const inventoryhistory1 = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
 
-    await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name}`, `User ${username} bought ${miner.type}`, priceminer)
+        await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
+    } else {
+
+        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+        .catch(err => {
+    
+            console.log(`Failed to miner inventory data for ${username} type: ${type}, error: ${err}`)
+    
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        })
+    
+        
+        const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name}`)
+        
+        await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name}`, `User ${username} bought ${miner.type}`, priceminer)
+    }
 
     return res.json({message: "success"})
 }

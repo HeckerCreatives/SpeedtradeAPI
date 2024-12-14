@@ -67,8 +67,10 @@ exports.initialize = async (req, res) => {
         return
     })
 
+    const mainte = [{ insertOne: { type: "b1t1", value: "0" }},  { insertOne: { type: "payout", value: "1" } }]
+
     if (maintenances.length <= 0){
-        await Maintenance.create({type: "payout", value: "1"})
+        await Maintenance.bulkWrite(mainte)
     }
 
     console.log("Server Initialization Success")

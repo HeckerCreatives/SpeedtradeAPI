@@ -7,6 +7,7 @@ const { DateTimeServerExpiration, DateTimeServer, AddUnixtimeDay, RemainingTime 
 const { addanalytics } = require("../utils/analyticstools")
 const { addwallethistory } = require("../utils/wallethistorytools")
 const Maintenance = require("../models/Maintenance")
+const Miner = require("../models/Miner")
 
 //  #region USER
 
@@ -68,7 +69,7 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
     }
 
-    const miner = await minerdata(type)
+    const miner = await Miner.findOne({ type: type })
 
     if (priceminer < miner.min){
         return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
@@ -215,7 +216,7 @@ exports.claimminer = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem claiming your miner! Please contact customer support for more details"})
     })
 
-    const miner = minerdata(minerinventorydata.type)
+    const miner = await Miner.findOne({ type: minerinventorydata.type})
 
     if (!miner){
         return res.status(400).json({message: "failed", data: "There's no existing miner! Please contact customer support for more details"})

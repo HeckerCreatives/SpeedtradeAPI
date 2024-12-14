@@ -4,6 +4,7 @@ const Staffusers = require("../models/Staffusers")
 const Userwallets = require("../models/Userwallets")
 const Userdetails = require("../models/Userdetails")
 const Maintenance = require("../models/Maintenance")
+const Miner = require("../models/Miner")
 
 exports.initialize = async (req, res) => {
 
@@ -71,6 +72,53 @@ exports.initialize = async (req, res) => {
 
     if (maintenances.length <= 0){
         await Maintenance.bulkWrite(mainte)
+    }
+
+    const Miners = await Miner.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting creature data ${err}`)
+        return
+    })
+
+    if(Miners.length <= 0){
+        const Minerz = [
+            {
+                    type: "quick_miner",
+                    name: "Quick Miner",
+                    profit: 0.20,
+                    duration: 5,
+                    min: 500,
+                    max: 2000
+            },
+            {
+                    type: "swift_lane",
+                    name: "Switf Lane",
+                    profit: 0.60,
+                    duration: 10,
+                    min: 2000,
+                    max: 20000
+            },
+            {
+                    type: "rapid_lane",
+                    name: "Rapid Lane",
+                    profit: 1.5,
+                    duration: 20,
+                    min: 20000,
+                    max: 2000000
+            }
+        ];
+
+        await Miner.bulkWrite(
+            Minerz.map((Miner) => ({
+                insertOne: { document: Miner },
+            }))
+        )
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem creating creature data ${err}`)
+            return
+        })
     }
 
     console.log("Server Initialization Success")

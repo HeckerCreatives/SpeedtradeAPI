@@ -1,7 +1,7 @@
 const { default: mongoose } = require("mongoose")
 const Inventory = require("../models/Inventory")
 const Inventoryhistory = require("../models/Inventoryhistory")
-const { minerdata, saveinventoryhistory, getfarm } = require("../utils/inventorytools")
+const { saveinventoryhistory, getfarm } = require("../utils/inventorytools")
 const { walletbalance, reducewallet, sendcommissionunilevel, addwallet } = require("../utils/walletstools")
 const { DateTimeServerExpiration, DateTimeServer, AddUnixtimeDay, RemainingTime } = require("../utils/datetimetools")
 const { addanalytics } = require("../utils/analyticstools")

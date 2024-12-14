@@ -254,7 +254,10 @@ exports.getbuyhistory = async (req, res) => {
         limit: parseInt(limit) || 10
     }
 
-    const history = await Inventoryhistory.find({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Buy Switf Lane"}, {type: "Buy Rapid Lane"}]})
+    const history = await Inventoryhistory.find({
+        owner: new mongoose.Types.ObjectId(id),
+        type: { $regex: /^Buy/, $options: 'i' } 
+    })
     .skip(pageOptions.page * pageOptions.limit)
     .limit(pageOptions.limit)
     .sort({'createdAt': -1})

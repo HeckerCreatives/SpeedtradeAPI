@@ -1,4 +1,4 @@
-const { createGlobalPass, getusagehistory } = require("../controllers/Globalpass")
+const { createGlobalPass, getusagehistory } = require("../controllers/globalpass")
 const { protectsuperadmin } = require("../middleware/middleware")
 
 const router = require("express").Router()

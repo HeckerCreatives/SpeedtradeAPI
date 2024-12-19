@@ -17,6 +17,13 @@ exports.requestpayout = async (req, res) => {
         return res.status(400).json({message: "failed", data: "Minimum cashout is ₱500"})
     }
 
+    if(paymentmethod.toLowerCase() === 'gcash' && payoutvalue > 5000){
+        return res.status(400).json({message: "failed", data: "Gcash pay out maximum value is ₱5000."})
+    }
+
+    if(paymentmethod.toLowerCase() === 'gotyme' && payoutvalue < 5000){
+        return res.status(400).json({message: "failed", data: "GoTyme pay out minimum value is ₱5000."})
+    }
     const maintenances = await Maintenance.findOne({type: "payout"})
     .then(data => data)
 

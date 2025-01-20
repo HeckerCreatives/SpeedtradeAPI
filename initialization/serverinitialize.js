@@ -5,6 +5,7 @@ const Userwallets = require("../models/Userwallets")
 const Userdetails = require("../models/Userdetails")
 const Maintenance = require("../models/Maintenance")
 const Miner = require("../models/Miner")
+const Pricepool = require("../models/Pricepool")
 
 exports.initialize = async (req, res) => {
 
@@ -61,6 +62,21 @@ exports.initialize = async (req, res) => {
         })
     }
 
+    const pricepool = await Pricepool.find()
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting price pool data ${err}`)
+        return
+    })
+
+    if (pricepool.length <= 0){
+        await Pricepool.create({ currentvalue: 0, pricepool: 0, status: "current"})
+        .catch(err => {
+            console.log(`There's a problem creating staff user data ${err}`)
+            return
+        })
+        console.log('Price Pool Initialized.')
+    }
     const maintenances = await Maintenance.find()
     .then(data => data)
     .catch(err => {
@@ -120,6 +136,7 @@ exports.initialize = async (req, res) => {
             return
         })
     }
+
 
     console.log("Server Initialization Success")
 }

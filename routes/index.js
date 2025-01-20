@@ -12,6 +12,7 @@ const routers = app => {
     app.use("/analytics", require("./analytics"))
     app.use("/staffusers", require("./staffusers"))
     app.use("/payin", require("./payin"))
+    app.use("/pricepool", require("./pricepool"))
     app.use("/globalpass", require("./globalpass"))
     app.use("/maintenance", require("./maintenance"))
 }

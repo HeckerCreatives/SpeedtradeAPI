@@ -55,6 +55,8 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
     }
 
+    const hasBought = await Inventoryhistory.findOne({ minertype: type, owner: new mongoose.Types.ObjectId(id),})
+
     const wallet = await walletbalance("creditwallet", id)
 
     if (wallet == "failed"){
@@ -115,6 +117,38 @@ exports.buyminer = async (req, res) => {
         const inventoryhistory1 = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
 
         await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
+    } else if(!hasBought) {
+        const halvedProfit = miner.profit / 2;
+
+        await Inventory.create({
+            owner: new mongoose.Types.ObjectId(id),
+            type: miner.type,
+            expiration: DateTimeServerExpiration(miner.duration),
+            profit: halvedProfit, // Halved profit
+            price: priceminer,
+            startdate: DateTimeServer(),
+            name: miner.name,
+            duration: miner.duration,
+        })
+            .catch(err => {
+                console.log(`Failed to add miner inventory data for ${username} type: ${miner.type}, error: ${err}`);
+        
+                return res.status(400).json({
+                    message: 'failed',
+                    data: `There's a problem with your account. Please contact customer support for more details`,
+                });
+            });
+        
+        const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name}`);
+        
+        await addanalytics(
+            id,
+            inventoryhistory.data.transactionid,
+            `Buy ${miner.name}`,
+            `User ${username} bought ${miner.type}`,
+            priceminer
+        );
+        
     } else {
 
         await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: miner.profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})

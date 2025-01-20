@@ -134,9 +134,10 @@ exports.buyminer = async (req, res) => {
 
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
         .then(data => data)
+        const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
+        .then(data => data)
 
-
-        if(!tempminer){
+        if(!tempminer && !tempminer1){
             adjustedProfit = 0.5
         }
         

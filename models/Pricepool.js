@@ -15,7 +15,13 @@ const PricepoolSchema = new mongoose.Schema(
         status: {
             type: String,
             index: true,
-        }
+        },
+        tiers: [
+            {
+                type: String,
+                index: true,
+            }
+        ]
     },
     {
         timestamps: true,

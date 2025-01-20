@@ -351,6 +351,87 @@ exports.getcommissiongraph = async (req, res) => {
         return res.json({message: "success", data: result});
     }
 }
+exports.getcommissionlist = async (req, res) => {
+    const { page, limit, date } = req.query;
+
+    const pageOptions = {
+        page: parseInt(page) || 0,
+        limit: parseInt(limit) || 10,
+    };
+
+    let dateFilter = {};
+    if (date) {
+        const startOfDay = new Date(date);
+        startOfDay.setHours(0, 0, 0, 0);
+        const endOfDay = new Date(date);
+        endOfDay.setHours(23, 59, 59, 999);
+
+        dateFilter.createdAt = {
+            $gte: startOfDay,
+            $lte: endOfDay,
+        };
+    }
+
+    const aggregationpipeline = [
+        {
+            $match: {
+                $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
+                ...dateFilter,
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "referrer",
+            },
+        },
+        {
+            $unwind: "$referrer",
+        },
+        {
+            $sort: { createdAt: -1 },
+        },
+        { $skip: pageOptions.page * pageOptions.limit },
+        { $limit: pageOptions.limit },
+    ];
+
+    const data = await Analytics.aggregate(aggregationpipeline)
+        .then((data) => data)
+        .catch((err) => {
+            console.log(`There's a problem encountered while fetching commission list. Error: ${err}`);
+            return res
+                .status(400)
+                .json({ message: "bad-request", data: "There's a problem with the server! Please contact support for more details." });
+        });
+
+    if (!data) return; // Stop execution if data aggregation failed
+
+    const totaldocuments = await Analytics.countDocuments({
+        $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
+        ...dateFilter,
+    })
+        .then((count) => count)
+        .catch((err) => {
+            console.log(`There's a problem encountered while counting commission documents. Error: ${err}`);
+            return res
+                .status(400)
+                .json({ message: "bad-request", data: "There's a problem with the server! Please contact support for more details." });
+        });
+
+    if (totaldocuments === undefined) return; // Stop execution if count failed
+
+    const totalpages = Math.ceil(totaldocuments / pageOptions.limit);
+
+    const finaldata = {
+        data: data,
+        totalpages: totalpages,
+    };
+
+    return res.status(200).json({ message: "success", data: finaldata });
+};
+
 
 exports.getproductgraph = async (req, res) => {
     const {id, username} = req.user

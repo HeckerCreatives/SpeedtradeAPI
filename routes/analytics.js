@@ -1,5 +1,5 @@
 const router = require("express").Router()
-const { getpayingraph, getcommissiongraph, getproductgraph, getearningpayoutgraph, getunilevelpayoutgraph, gettotalpayinperday, getreferrallinkstatus } = require("../controllers/analytics")
+const { getpayingraph, getcommissiongraph, getproductgraph, getearningpayoutgraph, getunilevelpayoutgraph, gettotalpayinperday, getreferrallinkstatus, getcommissionlist } = require("../controllers/analytics")
 const { protectplayer, protectsuperadmin } = require("../middleware/middleware")
 
 router
@@ -29,6 +29,7 @@ router
     .get("/getminerpayoutgraphadmin", protectsuperadmin, getearningpayoutgraph)
     .get("/getunilevelpayoutgraphadmin", protectsuperadmin, getunilevelpayoutgraph)
     .get("/getsalesadmin", protectsuperadmin, gettotalpayinperday)
+    .get("/getcommissionlist", protectsuperadmin, getcommissionlist)
 
     //  #endregion
 

@@ -14,24 +14,17 @@ const Miner = require("../models/Miner")
 exports.buyminer = async (req, res) => {
     const {id, username} = req.user
     const {type, priceminer } = req.body
-    
 
-    if (type == "swift_lane" || type == "rapid_lane") {
-        const claimedMinerType = type == "swift_lane" ? "quick_miner" : "Switf_lane";
-        let adjustedProfit = 1; 
+    if (type == "swift_lane"){
 
-        const claimedMiner = await Inventoryhistory.findOne({
-            owner: new mongoose.Types.ObjectId(id),
-            minertype: claimedMinerType,
-            type: `Buy ${claimedMinerType.replace("_", " ").toUpperCase()}`
-        });
+        let adjustedProfit = 1
+        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
+        .then(data => data)
 
-        if (!claimedMiner) {
-            adjustedProfit = 0.5;
+        if(!tempminer){
+            adjustedProfit = 0.5
         }
-
-        const miner = await Miner.findOne({ type: type });
-        const adjustedMinerProfit = miner.profit * adjustedProfit;
+        
         
         const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
         .then(data => data)
@@ -40,31 +33,61 @@ exports.buyminer = async (req, res) => {
     
             return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
         })
-        if (priceminer < miner.min) {
-            return res.status(400).json({
-                message: "failed",
-                data: `The minimum price for ${miner.type} is ${miner.min} pesos`
-            });
+    
+        const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the inventory miner of ${id}. Error: ${err}`)
+    
+            return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+        })
+    
+        if (totalminer.length >= 2){
+            return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
         }
-
-        if (priceminer > miner.max) {
-            return res.status(400).json({
-                message: "failed",
-                data: `The maximum price for ${miner.type} is ${miner.max} pesos`
-            });
+    
+        const wallet = await walletbalance("creditwallet", id)
+    
+        if (wallet == "failed"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
         }
-
-        const buy = await reducewallet("creditwallet", priceminer, id);
-        if (buy != "success") {
-            return res.status(400).json({
-                message: "failed",
-                data: `You don't have enough funds to buy this miner! Please top up first and try again.`
-            });
+    
+        if (wallet == "nodata"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
         }
+    
+        if (wallet < priceminer){
+            return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+        }
+    
+        const miner = await Miner.findOne({ type: type })
+    
+        const profit = miner.profit * adjustedProfit
 
+        if (priceminer < miner.min){
+            return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
+        }
+    
+        if (priceminer > miner.max){
+            return res.status(400).json({ message: 'failed', data: `The maximum price for ${miner.type} is ${miner.max} pesos`})
+        }
+    
+        const buy = await reducewallet("creditwallet", priceminer, id)
+    
+        if (buy != "success"){
+            return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+        }
+    
+        const unilevelrewards = await sendcommissionunilevel(priceminer, id, miner.type)
+    
+        if (unilevelrewards != "success"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        }
+        
+        
         if(b1t1 && b1t1.value === '1' && b1t1.type === 'b1t1'){
-
-            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: adjustedMinerProfit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+    
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
             .catch(err => {
         
                 console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
@@ -75,7 +98,7 @@ exports.buyminer = async (req, res) => {
     
             await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
     
-            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: adjustedMinerProfit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
             .catch(err => {
         
                 console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
@@ -87,7 +110,7 @@ exports.buyminer = async (req, res) => {
             await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
         } else {
     
-            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: adjustedMinerProfit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
             .catch(err => {
         
                 console.log(`Failed to miner inventory data for ${username} type: ${type}, error: ${err}`)
@@ -100,8 +123,123 @@ exports.buyminer = async (req, res) => {
             
             await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name}`, `User ${username} bought ${miner.type}`, priceminer)
         }
+    
+        return res.json({message: "success"})
 
-        return res.json({ message: "success" });
+    }
+
+    else if (type == "rapid_lane"){
+        //  ADD CONDITION HERE IF CLAIM SWIFT LANE
+        let adjustedProfit = 1
+
+        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
+        .then(data => data)
+
+
+        if(!tempminer){
+            adjustedProfit = 0.5
+        }
+        
+        
+        const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting b1t1 maintenance. Error: ${err}`)
+    
+            return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+        })
+    
+        const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem getting the inventory miner of ${id}. Error: ${err}`)
+    
+            return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+        })
+    
+        if (totalminer.length >= 2){
+            return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
+        }
+    
+        const wallet = await walletbalance("creditwallet", id)
+    
+        if (wallet == "failed"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        }
+    
+        if (wallet == "nodata"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        }
+    
+        if (wallet < priceminer){
+            return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+        }
+    
+        const miner = await Miner.findOne({ type: type })
+    
+        const profit = miner.profit * adjustedProfit
+
+        if (priceminer < miner.min){
+            return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
+        }
+    
+        if (priceminer > miner.max){
+            return res.status(400).json({ message: 'failed', data: `The maximum price for ${miner.type} is ${miner.max} pesos`})
+        }
+    
+        const buy = await reducewallet("creditwallet", priceminer, id)
+    
+        if (buy != "success"){
+            return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+        }
+    
+        const unilevelrewards = await sendcommissionunilevel(priceminer, id, miner.type)
+    
+        if (unilevelrewards != "success"){
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        }
+        
+        
+        if(b1t1 && b1t1.value === '1' && b1t1.type === 'b1t1'){
+    
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+            .catch(err => {
+        
+                console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
+        
+                return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+            })
+            const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
+    
+            await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
+    
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+            .catch(err => {
+        
+                console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
+        
+                return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+            })
+            const inventoryhistory1 = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
+    
+            await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
+        } else {
+    
+            await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: profit, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+            .catch(err => {
+        
+                console.log(`Failed to miner inventory data for ${username} type: ${type}, error: ${err}`)
+        
+                return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+            })
+        
+            
+            const inventoryhistory = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name}`)
+            
+            await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name}`, `User ${username} bought ${miner.type}`, priceminer)
+        }
+    
+        return res.json({message: "success"})
     }
 
     const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })

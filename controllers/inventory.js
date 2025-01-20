@@ -23,7 +23,7 @@ exports.buyminer = async (req, res) => {
         const claimedMiner = await Inventoryhistory.findOne({
             owner: new mongoose.Types.ObjectId(id),
             minertype: claimedMinerType,
-            type: `Claim ${claimedMinerType.replace("_", " ").toUpperCase()}`
+            type: `Buy ${claimedMinerType.replace("_", " ").toUpperCase()}`
         });
 
         if (!claimedMiner) {

@@ -50,10 +50,11 @@ exports.getcurrentpricepool = async (req, res) => {
 exports.usergetpricepool = async (req, res) => {
     const { id } = req.user
 
+    let boolean = true
     const currentpricepool = await Pricepool.findOne({ status: "current" })
     
     if (!currentpricepool || !currentpricepool.tiers || currentpricepool.tiers.length === 0) {
-        return res.status(400).json({ message: "failed", data: "There's no existing tiers in price pool." });
+        boolean = false
     }
 
     const { tiers } = currentpricepool;
@@ -64,15 +65,13 @@ exports.usergetpricepool = async (req, res) => {
     })
 
     if (!hasMatchingInventory) {
-        return res.status(400).json({
-            message: "failed",
-            data: "No matching inventory found for the current tiers.",
-        });
+        boolean = false
     }
 
 
     return res.status(200).json({
         message: "success",
-        data: currentpricepool
+        data: currentpricepool,
+        boolean: boolean
     });
 }

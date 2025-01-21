@@ -58,13 +58,13 @@ exports.distributepricepool = async (req, res) => {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with your account! Please contact support for more details."})
     })
     
-    await Userwallets.updateMany(Promise.all(uniqueOwners.map(owner => {
-        return {
-            owner,
-            type: "creditwallet",
-            $inc: { amount: distribution }
-        }
-    }))
+    await Promise.all(
+        uniqueOwners.map(async (owner) => {
+            return Userwallets.updateOne(
+                { owner, type: "creditwallet" },
+                { $inc: { amount: distribution } }
+            );
+        })
     )
     .catch(err => {
         console.log(`There's a problem encoutered while distributing price pool in distribute pricepool. Error: ${err}`)

@@ -5,11 +5,11 @@ const PricepoolHistorySchema = new mongoose.Schema(
     {
         pricepool: {
             type: mongoose.Schema.Types.ObjectId,
-            ref: "Pricepool"
+            ref: "Pricepool",
         },
         Benificiary: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Staffuser"
+            type: String,
+            index: true
         },
         total: {
             type: Number,

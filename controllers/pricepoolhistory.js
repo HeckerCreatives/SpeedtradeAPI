@@ -61,6 +61,7 @@ exports.distributepricepool = async (req, res) => {
     await Userwallets.updateMany(Promise.all(uniqueOwners.map(owner => {
         return {
             owner,
+            type: "creditwallet",
             $inc: { amount: distribution }
         }
     }))

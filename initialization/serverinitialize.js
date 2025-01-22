@@ -97,6 +97,22 @@ exports.initialize = async (req, res) => {
         return
     })
 
+
+    const flashminer = await Miner.findOne({ type: "flash_miner" })
+
+    if(!flashminer){
+        await Miner.create({
+            type: "flash_miner",
+            name: "Flash Miner",
+            profit: 4,
+            duration: 40,
+            min: 10000,
+            max: 1000000
+        })
+        console.log('Flash Miner Initialized.')
+    }
+
+
     if(Miners.length <= 0){
         const Minerz = [
             {

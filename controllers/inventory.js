@@ -37,6 +37,22 @@ exports.buyminer = async (req, res) => {
             adjustedProfit = 0.5
         }
         
+    } 
+    else if (type == "flash_miner"){
+        //  ADD CONDITION HERE IF CLAIM SWIFT LANE
+        let adjustedProfit = 1
+
+        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
+        .then(data => data)
+        const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
+        .then(data => data)
+        const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Rapid Lane"})
+        .then(data => data)
+
+        if(!tempminer || !tempminer1 || !tempminer2){
+            adjustedProfit = 0.5
+        }
+        
     }
 
     const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })

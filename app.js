@@ -23,6 +23,10 @@ const corsConfig = {
 app.use(cors(corsConfig));
 const server = http.createServer(app);
 
+const io = require("socket.io")(server, {
+  cors: corsConfig, // Use the same CORS configuration for Socket.IO
+});
+
 mongoose
   .connect(process.env.DATABASE_URL, {
     useNewUrlParser: true,
@@ -41,6 +45,10 @@ app.use(cookieParser());
 
 // Routes
 require("./routes")(app);
+
+const socketSetup = require('./socket/socket')
+socketSetup(io)
+
 
 
 const port = process.env.PORT || 5001; // Dynamic port for deployment

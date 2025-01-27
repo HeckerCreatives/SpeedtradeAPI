@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose")
 const Miner = require("../models/Miner")
 const Maintenance = require("../models/Maintenance")
+const Inventoryhistory = require("../models/Inventoryhistory")
 
 
 exports.getMiner = async(req, res)=> {

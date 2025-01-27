@@ -46,7 +46,7 @@ exports.buyminer = async (req, res) => {
         .then(data => data)
         const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
-        const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Rapid Lane"})
+        const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
         .then(data => data)
 
         if(!tempminer || !tempminer1 || !tempminer2){

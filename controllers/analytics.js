@@ -384,8 +384,16 @@ exports.getcommissionlist = async (req, res) => {
                 from: "users",
                 localField: "owner",
                 foreignField: "_id",
-                as: "referrer",
+                as: "user",
             },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user.referral",
+                foreignField: "_id",
+                as: "referrer"
+            }
         },
         ...(search
             ? [{
@@ -396,6 +404,9 @@ exports.getcommissionlist = async (req, res) => {
                 }
             }]
             : []),        
+        {
+            $unwind: "$user",
+        },
         {
             $unwind: "$referrer",
         },
@@ -428,6 +439,14 @@ exports.getcommissionlist = async (req, res) => {
             $lookup: {
                 from: "users",
                 localField: "owner",
+                foreignField: "_id",
+                as: "user",
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "user.referral",
                 foreignField: "_id",
                 as: "referrer",
             },

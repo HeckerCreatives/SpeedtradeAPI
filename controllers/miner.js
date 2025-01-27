@@ -36,7 +36,7 @@ exports.getMiner = async(req, res)=> {
 
 exports.getUserMiner = async(req, res)=> {
     const { id, username } = req.user
-    const { type } = req.body
+    const { type } = req.query
 
     let value = true
     if (type == "swift_lane"){
@@ -56,7 +56,7 @@ exports.getUserMiner = async(req, res)=> {
         if(!tempminer || !tempminer1){
             value = false
         }
-        
+
     } 
     else if (type == "flash_miner"){
 
@@ -72,6 +72,7 @@ exports.getUserMiner = async(req, res)=> {
         }
         
     }
+
     return res.status(200).json({ message: "success", data: value})
 }
 

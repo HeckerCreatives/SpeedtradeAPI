@@ -352,7 +352,7 @@ exports.getcommissiongraph = async (req, res) => {
     }
 }
 exports.getcommissionlist = async (req, res) => {
-    const { page, limit, date } = req.query;
+    const { page, limit, startdate, enddate, search } = req.query;
 
     const pageOptions = {
         page: parseInt(page) || 0,
@@ -360,10 +360,10 @@ exports.getcommissionlist = async (req, res) => {
     };
 
     let dateFilter = {};
-    if (date) {
-        const startOfDay = new Date(date);
+    if (startdate && enddate) {
+        const startOfDay = new Date(startdate);
         startOfDay.setHours(0, 0, 0, 0);
-        const endOfDay = new Date(date);
+        const endOfDay = new Date(enddate);
         endOfDay.setHours(23, 59, 59, 999);
 
         dateFilter.createdAt = {
@@ -387,6 +387,15 @@ exports.getcommissionlist = async (req, res) => {
                 as: "referrer",
             },
         },
+        ...(search
+            ? [{
+                $match: {
+                    'referrer.username': {
+                        $regex: new RegExp(search, 'i') // Case-insensitive regex match
+                    }
+                }
+            }]
+            : []),        
         {
             $unwind: "$referrer",
         },
@@ -408,20 +417,50 @@ exports.getcommissionlist = async (req, res) => {
 
     if (!data) return; // Stop execution if data aggregation failed
 
-    const totaldocuments = await Analytics.countDocuments({
-        $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
-        ...dateFilter,
-    })
-        .then((count) => count)
+    const totaldocuments = await Analytics.aggregate([
+        {
+            $match: {
+                $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
+                ...dateFilter,
+            },
+        },
+        {
+            $lookup: {
+                from: "users",
+                localField: "owner",
+                foreignField: "_id",
+                as: "referrer",
+            },
+        },
+        ...(search
+            ? [{
+                $match: {
+                    'referrer.username': {
+                        $regex: new RegExp(search, 'i'), // Case-insensitive regex match
+                    },
+                },
+            }]
+            : []),
+        {
+            $unwind: "$referrer",
+        },
+        {
+            $count: "total",
+        },
+    ])
+        .then((result) => (result.length > 0 ? result[0].total : 0))
         .catch((err) => {
-            console.log(`There's a problem encountered while counting commission documents. Error: ${err}`);
-            return res
-                .status(400)
-                .json({ message: "bad-request", data: "There's a problem with the server! Please contact support for more details." });
+            console.log(
+                `There's a problem encountered while counting commission documents. Error: ${err}`
+            );
+            return res.status(400).json({
+                message: "bad-request",
+                data: "There's a problem with the server! Please contact support for more details.",
+            });
         });
-
+    
     if (totaldocuments === undefined) return; // Stop execution if count failed
-
+    
     const totalpages = Math.ceil(totaldocuments / pageOptions.limit);
 
     const finaldata = {

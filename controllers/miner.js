@@ -5,8 +5,7 @@ const Inventoryhistory = require("../models/Inventoryhistory")
 
 
 exports.getMiner = async(req, res)=> {
-    const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
-
+ 
     const miners = await Miner.find()
     .then(data => data)
     .catch(err => {

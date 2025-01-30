@@ -230,46 +230,58 @@ exports.claimminer = async (req, res) => {
         return res.status(400).json({message: "failed", data: "There's no existing miner! Please contact customer support for more details"})
     }
 
-    const minerinventorydata = await Inventory.findOne({_id: new mongoose.Types.ObjectId(minerid), owner: new mongoose.Types.ObjectId(id)})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting the bot data of user ${username}, Miner id: ${minerid}. Error: ${err}`)
+    const session = await mongoose.startSession();
+session.startTransaction();
 
-        return res.status(400).json({message: "bad-request", data: "There's a problem claiming your miner! Please contact customer support for more details"})
-    })
+try {
+    // Step 1: Find and Delete Miner
+    const minerinventorydata = await Inventory.findOneAndDelete(
+        { _id: new mongoose.Types.ObjectId(minerid), owner: new mongoose.Types.ObjectId(id) },
+        { returnDocument: "before", session }
+    );
 
     if (!minerinventorydata) {
-        return res.status(400).json({message: "failed", data: "There's no existing miner! Please contact customer support for more details"})
+        await session.abortTransaction();
+        return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
     }
 
-    const miner = await Miner.findOne({ type: minerinventorydata.type})
+    // Step 2: Get Miner Data
+    const miner = await Miner.findOne({ type: minerinventorydata.type }).session(session);
 
-    if (!miner){
-        return res.status(400).json({message: "failed", data: "There's no existing miner! Please contact customer support for more details"})
-    }
-    
-    const remainingtime = RemainingTime(parseFloat(minerinventorydata.startdate), minerinventorydata.duration)
-
-    if (remainingtime > 0){
-        return res.status(400).json({message: "failed", data: "There are still remaining time before claiming! Wait for the timer to complete."})
+    if (!miner) {
+        await session.abortTransaction();
+        return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
     }
 
-    await Inventory.findOneAndDelete({_id: new mongoose.Types.ObjectId(minerid), owner: new mongoose.Types.ObjectId(id)})
-    .catch(err => {
-        console.log(`There's a problem updating the miner data of user ${username}, Miner id: ${minerid}. Error: ${err}`)
+    const remainingtime = RemainingTime(parseFloat(minerinventorydata.startdate), minerinventorydata.duration);
 
-        return res.status(400).json({message: "bad-request", data: "There's a problem claiming your bot! Please contact customer support for more details"})
-    })
+    if (remainingtime > 0) {
+        await session.abortTransaction();
+        return res.status(400).json({ message: "failed", data: "There are still remaining time before claiming! Wait for the timer to complete." });
+    }
 
-    const earnings = (minerinventorydata.price * miner.profit) + minerinventorydata.price
-    
-    await addwallet("minecoinwallet", earnings, id);
-    await addwallethistory(id, `minecoinwallet`, earnings, process.env.ADMIN_ID, `${minerinventorydata.name}`);
-    
-    const inventoryhistory = await saveinventoryhistory(id, `${minerinventorydata.type}`, earnings, `Claim ${minerinventorydata.name}`)
-    await addanalytics(id, inventoryhistory.data.transactionid,  `Claim ${minerinventorydata.name}`, `User ${username} claim earnings ${earnings}`, earnings)
+    // Step 3: Calculate Earnings
+    const earnings = (minerinventorydata.price * miner.profit) + minerinventorydata.price;
 
-    return res.json({message: "success"})
+    // Step 4: Update Wallets (Ensure These Functions Support Transactions)
+    await addwallet("minecoinwallet", earnings, id, session);
+    await addwallethistory(id, "minecoinwallet", earnings, process.env.ADMIN_ID, minerinventorydata.name, session);
+    const inventoryhistory = await saveinventoryhistory(id, minerinventorydata.type, earnings, `Claim ${minerinventorydata.name}`, session);
+    await addanalytics(id, inventoryhistory.data.transactionid, `Claim ${minerinventorydata.name}`, `User ${username} claim earnings ${earnings}`, earnings, session);
+
+    // Commit Transaction
+    await session.commitTransaction();
+    session.endSession();
+
+    return res.json({ message: "success" });
+
+} catch (error) {
+    console.log(`Error claiming miner: ${error}`);
+    await session.abortTransaction();
+    session.endSession();
+    return res.status(500).json({ message: "error", data: "Something went wrong! Please try again later." });
+}
+
 }
 
 exports.getbuyhistory = async (req, res) => {

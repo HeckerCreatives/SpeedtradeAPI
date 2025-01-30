@@ -238,6 +238,10 @@ exports.claimminer = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem claiming your miner! Please contact customer support for more details"})
     })
 
+    if (!minerinventorydata) {
+        return res.status(400).json({message: "failed", data: "There's no existing miner! Please contact customer support for more details"})
+    }
+
     const miner = await Miner.findOne({ type: minerinventorydata.type})
 
     if (!miner){

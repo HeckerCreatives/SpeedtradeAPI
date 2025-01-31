@@ -231,56 +231,56 @@ exports.claimminer = async (req, res) => {
     }
 
     const session = await mongoose.startSession();
-session.startTransaction();
+    session.startTransaction();
 
-try {
-    // Step 1: Find and Delete Miner
-    const minerinventorydata = await Inventory.findOneAndDelete(
-        { _id: new mongoose.Types.ObjectId(minerid), owner: new mongoose.Types.ObjectId(id) },
-        { returnDocument: "before", session }
-    );
+    try {
+        // Step 1: Find and Delete Miner
+        const minerinventorydata = await Inventory.findOneAndDelete(
+            { _id: new mongoose.Types.ObjectId(minerid), owner: new mongoose.Types.ObjectId(id) },
+            { returnDocument: "before", session }
+        );
 
-    if (!minerinventorydata) {
+        if (!minerinventorydata) {
+            await session.abortTransaction();
+            return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
+        }
+
+        // Step 2: Get Miner Data
+        const miner = await Miner.findOne({ type: minerinventorydata.type }).session(session);
+
+        if (!miner) {
+            await session.abortTransaction();
+            return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
+        }
+
+        const remainingtime = RemainingTime(parseFloat(minerinventorydata.startdate), minerinventorydata.duration);
+
+        if (remainingtime > 0) {
+            await session.abortTransaction();
+            return res.status(400).json({ message: "failed", data: "There are still remaining time before claiming! Wait for the timer to complete." });
+        }
+
+        // Step 3: Calculate Earnings
+        const earnings = (minerinventorydata.price * miner.profit) + minerinventorydata.price;
+
+        // Step 4: Update Wallets (Ensure These Functions Support Transactions)
+        await addwallet("minecoinwallet", earnings, id, session);
+        await addwallethistory(id, "minecoinwallet", earnings, process.env.ADMIN_ID, minerinventorydata.name, session);
+        const inventoryhistory = await saveinventoryhistory(id, minerinventorydata.type, earnings, `Claim ${minerinventorydata.name}`, session);
+        await addanalytics(id, inventoryhistory.data.transactionid, `Claim ${minerinventorydata.name}`, `User ${username} claim earnings ${earnings}`, earnings, session);
+
+        // Commit Transaction
+        await session.commitTransaction();
+        session.endSession();
+
+        return res.json({ message: "success" });
+
+    } catch (error) {
+        console.log(`Error claiming miner: ${error}`);
         await session.abortTransaction();
-        return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
+        session.endSession();
+        return res.status(500).json({ message: "error", data: "Something went wrong! Please try again later." });
     }
-
-    // Step 2: Get Miner Data
-    const miner = await Miner.findOne({ type: minerinventorydata.type }).session(session);
-
-    if (!miner) {
-        await session.abortTransaction();
-        return res.status(400).json({ message: "failed", data: "There's no existing miner! Please contact customer support for more details" });
-    }
-
-    const remainingtime = RemainingTime(parseFloat(minerinventorydata.startdate), minerinventorydata.duration);
-
-    if (remainingtime > 0) {
-        await session.abortTransaction();
-        return res.status(400).json({ message: "failed", data: "There are still remaining time before claiming! Wait for the timer to complete." });
-    }
-
-    // Step 3: Calculate Earnings
-    const earnings = (minerinventorydata.price * miner.profit) + minerinventorydata.price;
-
-    // Step 4: Update Wallets (Ensure These Functions Support Transactions)
-    await addwallet("minecoinwallet", earnings, id, session);
-    await addwallethistory(id, "minecoinwallet", earnings, process.env.ADMIN_ID, minerinventorydata.name, session);
-    const inventoryhistory = await saveinventoryhistory(id, minerinventorydata.type, earnings, `Claim ${minerinventorydata.name}`, session);
-    await addanalytics(id, inventoryhistory.data.transactionid, `Claim ${minerinventorydata.name}`, `User ${username} claim earnings ${earnings}`, earnings, session);
-
-    // Commit Transaction
-    await session.commitTransaction();
-    session.endSession();
-
-    return res.json({ message: "success" });
-
-} catch (error) {
-    console.log(`Error claiming miner: ${error}`);
-    await session.abortTransaction();
-    session.endSession();
-    return res.status(500).json({ message: "error", data: "Something went wrong! Please try again later." });
-}
 
 }
 

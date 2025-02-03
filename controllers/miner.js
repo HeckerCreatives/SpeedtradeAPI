@@ -74,7 +74,7 @@ exports.getUserMiner = async(req, res)=> {
 
 exports.editMiner = async (req, res) => {
 
-    const { minerid, duration, min, max, isBuyonetakeone } = req.body
+    const { minerid, duration, min, max, profit, isBuyonetakeone } = req.body
 
     if(!minerid){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
@@ -87,6 +87,7 @@ exports.editMiner = async (req, res) => {
         {
             $set: {
                 duration: parseFloat(duration),
+                profit: parseFloat(profit),
                 min: parseFloat(min),
                 max: parseFloat(max),
                 isBuyonetakeone: isBuyonetakeone

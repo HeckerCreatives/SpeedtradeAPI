@@ -78,7 +78,7 @@ exports.getUserMiner = async(req, res)=> {
 
 exports.editMiner = async (req, res) => {
 
-    const { minerid, duration } = req.body
+    const { minerid, duration, min, max } = req.body
 
     if(!minerid || !duration){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
@@ -90,7 +90,9 @@ exports.editMiner = async (req, res) => {
         },
         {
             $set: {
-                duration: parseFloat(duration)
+                duration: parseFloat(duration),
+                min: parseFloat(min),
+                max: parseFloat(max)
             }
         }
     )

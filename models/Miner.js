@@ -19,6 +19,9 @@ const MinerSchema = new mongoose.Schema({
     },
     max: {
         type: Number
+    },
+    isBuyonetakeone: {
+        type: String,
     }
 },
 { timestamps: true })

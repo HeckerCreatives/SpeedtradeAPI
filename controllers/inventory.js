@@ -114,8 +114,7 @@ exports.buyminer = async (req, res) => {
     }
     
     
-    if(b1t1 && b1t1.value === '1' && b1t1.type === 'b1t1'){
-
+    if(miner.isBuyonetakeone == '1'){
         await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: finalprice, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
         .catch(err => {
     

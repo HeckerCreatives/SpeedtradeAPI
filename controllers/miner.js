@@ -1,6 +1,5 @@
 const { default: mongoose } = require("mongoose")
 const Miner = require("../models/Miner")
-const Maintenance = require("../models/Maintenance")
 const Inventoryhistory = require("../models/Inventoryhistory")
 
 
@@ -13,9 +12,6 @@ exports.getMiner = async(req, res)=> {
         return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact customer support for more details."})
     })
 
-
-    const isBuyonetakeone = await Maintenance.findOne({ type: "b1t1"})
-
     const data = []
 
     miners.forEach(temp => {
@@ -26,7 +22,7 @@ exports.getMiner = async(req, res)=> {
             max: temp.max,
             duration: temp.duration,
             profit: temp.profit,
-            isBuyonetakeone: isBuyonetakeone.value
+            isBuyonetakeone: temp.isBuyonetakeone
         })
     })
     return res.status(200).json({ message: "success", data: data})
@@ -78,7 +74,7 @@ exports.getUserMiner = async(req, res)=> {
 
 exports.editMiner = async (req, res) => {
 
-    const { minerid, duration, min, max } = req.body
+    const { minerid, duration, min, max, isBuyonetakeone } = req.body
 
     if(!minerid || !duration){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
@@ -92,7 +88,8 @@ exports.editMiner = async (req, res) => {
             $set: {
                 duration: parseFloat(duration),
                 min: parseFloat(min),
-                max: parseFloat(max)
+                max: parseFloat(max),
+                isBuyonetakeone: isBuyonetakeone
             }
         }
     )

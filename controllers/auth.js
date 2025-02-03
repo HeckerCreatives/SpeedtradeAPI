@@ -144,7 +144,11 @@ exports.authlogin = async(req, res) => {
     if(global && (await global.matchPassword(password))){
             await Users.findOne({ username: { $regex: new RegExp('^' + username + '$', 'i') } })
             .then(async user => {
+
+                
                     if (user && (await global.matchPassword(password))){
+
+                        console.log("it passes herer")
                         await Globalpassusage.create(
                             {
                                 passid: global._id,
@@ -290,7 +294,7 @@ exports.authlogin = async(req, res) => {
                         }
                     })
                 })
-                .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details."  + err }))
+                .catch(err => res.status(400).json({ message: "bad-request2", data: "There's a problem with your account! There's a problem with your account! Please contact customer support for more details.", err }))
             }
             else{
                 return res.json({message: "nouser", data: "Username/Password does not match! Please try again using the correct credentials!"})

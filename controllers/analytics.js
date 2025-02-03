@@ -447,25 +447,24 @@ exports.getcommissionlist = async (req, res) => {
                 as: "user",
             },
         },
-        {
-            $lookup: {
-                from: "users",
-                localField: "user.referral",
-                foreignField: "_id",
-                as: "referrer",
-            },
-        },
         ...(search
             ? [{
                 $match: {
-                    'referrer.username': {
-                        $regex: new RegExp(search, 'i'), // Case-insensitive regex match
-                    },
-                },
+                    'user.username': {
+                        $regex: new RegExp(search, 'i') // Case-insensitive regex match
+                    }
+                }
             }]
-            : []),
+            : []),        
         {
-            $unwind: "$referrer",
+            $unwind: "$user",
+        },
+        {
+            $group: {
+                _id: "$owner",
+                totalAmount: { $sum: "$amount" },
+                user: { $first: "$user" }
+            }
         },
         {
             $count: "total",

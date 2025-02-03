@@ -76,7 +76,7 @@ exports.editMiner = async (req, res) => {
 
     const { minerid, duration, min, max, isBuyonetakeone } = req.body
 
-    if(!minerid || !duration){
+    if(!minerid){
         return res.status(400).json({ message: "failed", data: "Incomplete form data."})
     }
 

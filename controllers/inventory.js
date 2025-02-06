@@ -44,6 +44,18 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
     }
 
+    const miner = await Miner.findOne({ type: type })
+
+    const finalprice = miner.profit * adjustedProfit
+
+    if (priceminer < miner.min){
+        return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
+    }
+
+    if (priceminer > miner.max){
+        return res.status(400).json({ message: 'failed', data: `The maximum price for ${miner.type} is ${miner.max} pesos`})
+    }
+
     if (type == "swift_lane"){
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
@@ -113,19 +125,6 @@ exports.buyminer = async (req, res) => {
         adjustedProfit = 1
     }
 
-    console.log(adjustedProfit)
-
-    const miner = await Miner.findOne({ type: type })
-
-    const finalprice = miner.profit * adjustedProfit
-
-    if (priceminer < miner.min){
-        return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
-    }
-
-    if (priceminer > miner.max){
-        return res.status(400).json({ message: 'failed', data: `The maximum price for ${miner.type} is ${miner.max} pesos`})
-    }
 
     const buy = await reducewallet("creditwallet", priceminer, id)
 

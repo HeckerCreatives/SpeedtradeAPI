@@ -1,6 +1,7 @@
 const { default: mongoose } = require("mongoose")
 const Miner = require("../models/Miner")
 const Inventoryhistory = require("../models/Inventoryhistory")
+const Skip = require("../models/Skip")
 
 
 exports.getMiner = async(req, res)=> {
@@ -67,6 +68,17 @@ exports.getUserMiner = async(req, res)=> {
             value = false
         }
         
+    }
+
+    const isskip = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem fetching skip. Error: ${err}`)
+        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact customer support for more details."})
+    })
+
+    if(isskip){
+        value = true
     }
 
     return res.status(200).json({ message: "success", data: value})

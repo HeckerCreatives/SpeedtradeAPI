@@ -8,6 +8,7 @@ const { addanalytics } = require("../utils/analyticstools")
 const { addwallethistory } = require("../utils/wallethistorytools")
 const Maintenance = require("../models/Maintenance")
 const Miner = require("../models/Miner")
+const Skip = require("../models/Skip")
 
 //  #region USER
 
@@ -15,12 +16,27 @@ exports.buyminer = async (req, res) => {
     const {id, username} = req.user
     const {type, priceminer } = req.body
     let adjustedProfit = 1
+    
+    const skipped = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the skip data of ${id}. Error: ${err}`)
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    })
 
     if (type == "swift_lane"){
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
         if(!tempminer){
             adjustedProfit = 0.5
+        }
+
+        if(!skipped){
+            await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
+            .catch(err => {
+                console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
+                return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+            })
         }
     }
 
@@ -35,8 +51,16 @@ exports.buyminer = async (req, res) => {
 
         if(!tempminer || !tempminer1){
             adjustedProfit = 0.5
+
         }
-        
+
+        if(!skipped){
+            await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
+            .catch(err => {
+                console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
+                return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+            })
+        }
     } 
     else if (type == "flash_miner"){
         //  ADD CONDITION HERE IF CLAIM SWIFT LANE
@@ -52,16 +76,20 @@ exports.buyminer = async (req, res) => {
         if(!tempminer || !tempminer1 || !tempminer2){
             adjustedProfit = 0.5
         }
+        if(!skipped){
+            await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
+            .catch(err => {
+                console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
+                return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+            })
+        }
         
     }
 
-    const b1t1 = await Maintenance.findOne({ type: "b1t1", value: "1" })
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting b1t1 maintenance. Error: ${err}`)
 
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
-    })
+    if(skipped){
+        adjustedProfit = 1
+    }
 
     const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
     .then(data => data)

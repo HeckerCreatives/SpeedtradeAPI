@@ -17,6 +17,33 @@ exports.buyminer = async (req, res) => {
     const {type, priceminer, skip } = req.body
     let adjustedProfit = 1
 
+
+    const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the inventory miner of ${id}. Error: ${err}`)
+
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    })
+
+    if (totalminer.length >= 2){
+        return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
+    }
+
+    const wallet = await walletbalance("creditwallet", id)
+
+    if (wallet == "failed"){
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+    }
+
+    if (wallet == "nodata"){
+        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+    }
+
+    if (wallet < priceminer){
+        return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
+    }
+
     if (type == "swift_lane"){
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
@@ -87,32 +114,6 @@ exports.buyminer = async (req, res) => {
     }
 
     console.log(adjustedProfit)
-
-    const totalminer = await Inventory.find({owner: new mongoose.Types.ObjectId(id), type: type})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting the inventory miner of ${id}. Error: ${err}`)
-
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
-    })
-
-    if (totalminer.length >= 2){
-        return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
-    }
-
-    const wallet = await walletbalance("creditwallet", id)
-
-    if (wallet == "failed"){
-        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-    }
-
-    if (wallet == "nodata"){
-        return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-    }
-
-    if (wallet < priceminer){
-        return res.status(400).json({ message: 'failed', data: `You don't have enough funds to buy this miner! Please top up first and try again.` })
-    }
 
     const miner = await Miner.findOne({ type: type })
 

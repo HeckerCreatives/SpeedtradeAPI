@@ -46,26 +46,25 @@ exports.buyminer = async (req, res) => {
 
     const miner = await Miner.findOne({ type: type })
 
-    const finalprice = miner.profit * adjustedProfit
-
+    
     if (priceminer < miner.min){
         return res.status(400).json({ message: 'failed', data: `The minimum price for ${miner.type} is ${miner.min} pesos`})
     }
-
+    
     if (priceminer > miner.max){
         return res.status(400).json({ message: 'failed', data: `The maximum price for ${miner.type} is ${miner.max} pesos`})
     }
-
+    
     if (type == "swift_lane"){
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
         if(!tempminer){
             adjustedProfit = 0.5
         }
-
+        
         if(skip === false){
             adjustedProfit = 0.5
-
+            
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
             .catch(err => {
                 console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
@@ -73,22 +72,21 @@ exports.buyminer = async (req, res) => {
             })
         }
     }
-
+    
     else if (type == "rapid_lane"){
-        //  ADD CONDITION HERE IF CLAIM SWIFT LANE
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
         .then(data => data)
         const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
-
+        
         if(!tempminer || !tempminer1){
             adjustedProfit = 0.5
-
+            
         }
-
+        
         if(skip === false){
             adjustedProfit = 0.5
-
+            
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
             .catch(err => {
                 console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
@@ -97,22 +95,21 @@ exports.buyminer = async (req, res) => {
         }
     } 
     else if (type == "flash_miner"){
-        //  ADD CONDITION HERE IF CLAIM SWIFT LANE
-
+        
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
         .then(data => data)
         const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
         .then(data => data)
         const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
         .then(data => data)
-
+        
         if(!tempminer || !tempminer1 || !tempminer2){
             adjustedProfit = 0.5
         }
         if(skip === false){
-
+            
             adjustedProfit = 0.5
-
+            
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
             .catch(err => {
                 console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
@@ -121,9 +118,12 @@ exports.buyminer = async (req, res) => {
         }
         
     }
+    
     if(skip === true){
+        
         adjustedProfit = 1
     }
+    const finalprice = miner.profit * adjustedProfit
 
 
     const buy = await reducewallet("creditwallet", priceminer, id)

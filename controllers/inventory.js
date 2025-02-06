@@ -14,15 +14,8 @@ const Skip = require("../models/Skip")
 
 exports.buyminer = async (req, res) => {
     const {id, username} = req.user
-    const {type, priceminer } = req.body
+    const {type, priceminer, skip } = req.body
     let adjustedProfit = 1
-    
-    const skipped = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting the skip data of ${id}. Error: ${err}`)
-        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
-    })
 
     if (type == "swift_lane"){
         const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
@@ -31,7 +24,7 @@ exports.buyminer = async (req, res) => {
             adjustedProfit = 0.5
         }
 
-        if(skipped === null){
+        if(skip === false){
             adjustedProfit = 0.5
 
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
@@ -54,7 +47,7 @@ exports.buyminer = async (req, res) => {
 
         }
 
-        if(skipped === null){
+        if(skip === false){
             adjustedProfit = 0.5
 
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
@@ -77,7 +70,7 @@ exports.buyminer = async (req, res) => {
         if(!tempminer || !tempminer1 || !tempminer2){
             adjustedProfit = 0.5
         }
-        if(skipped === null){
+        if(skip === false){
 
             adjustedProfit = 0.5
 
@@ -89,12 +82,7 @@ exports.buyminer = async (req, res) => {
         }
         
     }
-
-    console.log(skipped)
-    console.log(adjustedProfit)
-
-    if(skipped !== null){
-        console.log("skipped is passing here")
+    if(skip === true){
         adjustedProfit = 1
     }
 

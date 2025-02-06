@@ -352,7 +352,7 @@ exports.getcommissiongraph = async (req, res) => {
     }
 }
 exports.getcommissionlist = async (req, res) => {
-    const { page, limit, startdate, enddate, search } = req.query;
+    const { page, limit, startdate, enddate, search, type } = req.query;
 
     const pageOptions = {
         page: parseInt(page) || 0,
@@ -375,7 +375,8 @@ exports.getcommissionlist = async (req, res) => {
     const aggregationpipeline = [
         {
             $match: {
-                $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
+                // $or: [{ type: "directcommissionwallet" }, { type: "commissionwallet" }],
+                type: { $regex: new RegExp(type, 'i') }, // Case-insensitive regex match for type                
                 ...dateFilter,
             },
         },

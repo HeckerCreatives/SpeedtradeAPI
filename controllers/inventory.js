@@ -231,7 +231,7 @@ exports.getinventory = async (req, res) => {
         const createdAtDate = new Date(createdAt);
 
         const matureDate = new Date(createdAtDate);
-        matureDate.setDate(createdAtDate.getDate() + (duration - 1)); 
+        matureDate.setDate(createdAtDate.getDate() + duration); 
 
 
 

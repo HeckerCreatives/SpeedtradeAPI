@@ -228,6 +228,13 @@ exports.getinventory = async (req, res) => {
         const earnings = getfarm(startdate, AddUnixtimeDay(startdate, duration), (price * profit) + price)
         const remainingtime = RemainingTime(parseFloat(startdate), duration)
 
+        const createdAtDate = new Date(createdAt);
+
+        const matureDate = new Date(createdAtDate);
+        matureDate.setDate(createdAtDate.getDate() + duration); 
+
+
+
         data.miners[index] = {
             minerid: _id,
             type: type,
@@ -236,7 +243,8 @@ exports.getinventory = async (req, res) => {
             duration: duration,
             earnings: earnings,
             remainingtime: remainingtime,
-            purchasedate: createdAt
+            purchasedate: createdAt,
+            maturedate: matureDate.toISOString()       
         }
 
         index++

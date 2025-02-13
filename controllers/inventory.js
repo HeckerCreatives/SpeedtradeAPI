@@ -26,6 +26,15 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
     })
 
+    const hasSkip = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the skip data of ${id}. Error: ${err}`)
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    })
+
+    console.log(hasSkip)
+
     if (totalminer.length >= 2){
         return res.status(400).json({message: "failed", data: `You can only have a max of 2 active ${(type == "quick_miner" ? "Quick" : type == "swift_lane" ? "Swift Lane" : "Rapid Lane")} miners. Please complete either of the two to buy again.`})
     }
@@ -45,6 +54,11 @@ exports.buyminer = async (req, res) => {
     }
 
     const miner = await Miner.findOne({ type: type })
+    .then(data => data)
+    .catch(err => {
+        console.log(`There's a problem getting the miner data of ${type}. Error: ${err}`)
+        return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+    })
 
     
     if (priceminer < miner.min){
@@ -62,8 +76,9 @@ exports.buyminer = async (req, res) => {
             adjustedProfit = 0.5
         }
         
-        if(skip === false){
+        if(skip === false && hasSkip === null){
             adjustedProfit = 0.5
+
             
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
             .catch(err => {
@@ -84,7 +99,7 @@ exports.buyminer = async (req, res) => {
             
         }
         
-        if(skip === false){
+        if(skip === false && hasSkip === null){
             adjustedProfit = 0.5
             
             await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
@@ -106,7 +121,7 @@ exports.buyminer = async (req, res) => {
         if(!tempminer || !tempminer1 || !tempminer2){
             adjustedProfit = 0.5
         }
-        if(skip === false){
+        if(skip === false && hasSkip === null){
             
             adjustedProfit = 0.5
             

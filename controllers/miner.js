@@ -74,15 +74,18 @@ exports.getUserMiner = async(req, res)=> {
         
     }
 
-    const isskip = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem fetching skip. Error: ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact customer support for more details."})
-    })
-
-    if(isskip !== null){
-        value = true
+    //  REMOVE THE IF STATEMENT AND CUT THE CODE INSIDE THE IF STATEMENT IF THE CLIENT WANTS THE FLASH MINER TO HAVE SKIP AGAIN
+    if (type == "swift_lane" || type == "rapid_lane"){
+        const isskip = await Skip.findOne({owner: new mongoose.Types.ObjectId(id)})
+        .then(data => data)
+        .catch(err => {
+            console.log(`There's a problem fetching skip. Error: ${err}`)
+            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server. Please contact customer support for more details."})
+        })
+    
+        if(isskip !== null){
+            value = true
+        }
     }
 
     return res.status(200).json({ message: "success", data: value})

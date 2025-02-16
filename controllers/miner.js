@@ -68,9 +68,9 @@ exports.getUserMiner = async(req, res)=> {
         //     value = false
         // }
         
-        //  REMOVED SKIP REQUESTED BY CLIENT, JUST UNCOMMENT IF THE CLIENT WANTS TO HAVE SKIP AGAIN AND COMMENT THE VALUE = FALSE
+        //  REMOVED SKIP REQUESTED BY CLIENT, JUST UNCOMMENT IF THE CLIENT WANTS TO HAVE SKIP AGAIN AND COMMENT THE VALUE = TRUE
 
-        value = false
+        value = true
         
     }
 

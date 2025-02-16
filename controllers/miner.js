@@ -57,16 +57,20 @@ exports.getUserMiner = async(req, res)=> {
     } 
     else if (type == "flash_miner"){
 
-        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
-        .then(data => data)
-        const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
-        .then(data => data)
-        const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
-        .then(data => data)
+        // const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
+        // .then(data => data)
+        // const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
+        // .then(data => data)
+        // const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
+        // .then(data => data)
 
-        if(!tempminer || !tempminer1 || !tempminer2){
-            value = false
-        }
+        // if(!tempminer || !tempminer1 || !tempminer2){
+        //     value = false
+        // }
+        
+        //  REMOVED SKIP REQUESTED BY CLIENT, JUST UNCOMMENT IF THE CLIENT WANTS TO HAVE SKIP AGAIN AND COMMENT THE VALUE = FALSE
+
+        value = false
         
     }
 

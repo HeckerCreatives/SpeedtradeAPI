@@ -111,27 +111,30 @@ exports.buyminer = async (req, res) => {
     } 
     else if (type == "flash_miner"){
         
-        const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
-        .then(data => data)
-        const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
-        .then(data => data)
-        const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
-        .then(data => data)
+        // const tempminer = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "swift_lane", type: "Buy Switf Lane"})
+        // .then(data => data)
+        // const tempminer1 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "quick_miner", type: "Buy Quick Miner"})
+        // .then(data => data)
+        // const tempminer2 = await Inventoryhistory.findOne({owner: new mongoose.Types.ObjectId(id), minertype: "rapid_lane", type: "Buy Rapid Lane"})
+        // .then(data => data)
         
-        if(!tempminer || !tempminer1 || !tempminer2){
-            adjustedProfit = 0.5
-        }
-        if(skip === false && hasSkip === null){
+        // if(!tempminer || !tempminer1 || !tempminer2){
+        //     adjustedProfit = 0.5
+        // }
+        // if(skip === false && hasSkip === null){
             
-            adjustedProfit = 0.5
+        //     adjustedProfit = 0.5
             
-            await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
-            .catch(err => {
-                console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
-                return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
-            })
-        }
-        
+        //     await Skip.create({ owner: new mongoose.Types.ObjectId(id), skip: "skip" })
+        //     .catch(err => {
+        //         console.log(`There's a problem creating the skip data of ${id}. Error: ${err}`)
+        //         return res.status(400).json({message: "bad-request", data: "There's a problem with the server! Please contact customer support."})
+        //     })
+        // }
+
+        //  REMOVED SKIP REQUESTED BY CLIENT, JUST UNCOMMENT IF THE CLIENT WANTS TO HAVE SKIP AGAIN AND COMMENT THE ADJUSTED PROFIT
+
+        adjustedProfit = 1
     }
     
     if(skip === true){

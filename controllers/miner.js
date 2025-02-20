@@ -84,6 +84,8 @@ exports.getUserMiner = async(req, res)=> {
     if(isskip !== null){
         value = true
     }
+// comment this if the client wants to have skip again
+    value = true
 
     //  REMOVE THE IF STATEMENT AND CUT THE CODE INSIDE THE IF STATEMENT IF THE CLIENT WANTS THE FLASH MINER TO HAVE SKIP AGAIN
     // if (type == "swift_lane" || type == "rapid_lane"){

@@ -156,26 +156,26 @@ exports.initialize = async (req, res) => {
 
     // find users created at before february 1 2025
 
-    const users = await Users.find({createdAt: {$lt: new Date("2025-02-01")}})
-// check if they have skip if not create for them
-    if(users.length > 0){
-        users.forEach(async (user) => {
-            await Skip.findOne({owner: new mongoose.Types.ObjectId(user._id)})
+//     const users = await Users.find({createdAt: {$lt: new Date("2025-02-01")}})
+// // check if they have skip if not create for them
+//     if(users.length > 0){
+//         users.forEach(async (user) => {
+//             await Skip.findOne({owner: new mongoose.Types.ObjectId(user._id)})
 
-            .then(async data => {
-                if(!data){
-                    await Skip.create({owner: new mongoose.Types.ObjectId(user._id)})
-                }
-            }
+//             .then(async data => {
+//                 if(!data){
+//                     await Skip.create({owner: new mongoose.Types.ObjectId(user._id)})
+//                 }
+//             }
 
-            )
-            .catch(err => {
-                console.log(`There's a problem getting skip data ${err}`)
-                return
-            })
-        }
-        )
-    }
+//             )
+//             .catch(err => {
+//                 console.log(`There's a problem getting skip data ${err}`)
+//                 return
+//             })
+//         }
+//         )
+//     }
             
 
     console.log("Server Initialization Success")

@@ -364,7 +364,7 @@ exports.getbuyhistory = async (req, res) => {
         }})
     }
 
-    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(id), $or: [{type: "Buy Quick Miner"}, {type: "Buy Swift Lane"}, {type: "Buy Rapid Lane"}]})
+    const totalPages = await Inventoryhistory.countDocuments({owner: new mongoose.Types.ObjectId(id), type: { $regex: /^Buy/, $options: "i" }})
     .then(data => data)
     .catch(err => {
 

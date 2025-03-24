@@ -10,67 +10,116 @@ const { FormatDate } = require("../utils/datetimetools")
 //  #region USER
 
 exports.requestpayout = async (req, res) => {
-    const {id, username} = req.user
-    const {type, payoutvalue, paymentmethod, accountname, accountnumber} = req.body
+    const { id, username } = req.user;
+    const { type, payoutvalue, paymentmethod, accountname, accountnumber } = req.body;
 
-    if (payoutvalue < 500){
-        return res.status(400).json({message: "failed", data: "Minimum cashout is ₱500"})
+    const allowedBanks = [
+        "BDO",
+        "BPI",
+        "RCBC",
+        "EASTWEST",
+        "CHINABANK",
+        "UNION BANK",
+        "SECURITY BANK"
+    ];
+
+    if (payoutvalue < 500) {
+        return res.status(400).json({ message: "failed", data: "Minimum cashout is ₱500" });
     }
 
-    if(paymentmethod.toLowerCase() === 'gcash' && payoutvalue > 5000){
-        return res.status(400).json({message: "failed", data: "Gcash pay out maximum value is ₱5000."})
+    if (paymentmethod.toLowerCase() === "gcash" && payoutvalue > 5000) {
+        return res.status(400).json({ message: "failed", data: "Gcash pay out maximum value is ₱5000." });
     }
 
-    if(paymentmethod.toLowerCase() === 'gotyme' && payoutvalue < 0){
-        return res.status(400).json({message: "failed", data: "GoTyme pay out minimum value is ₱0."})
-    }
-    const maintenances = await Maintenance.findOne({type: "payout"})
-    .then(data => data)
 
-    if (maintenances.value == "1"){
-        return res.status(400).json({message: "failed", data: "Cashout is available only in "})
+    if (paymentmethod.toLowerCase() === "gotyme" && payoutvalue < 0) {
+        return res.status(400).json({ message: "failed", data: "GoTyme pay out minimum value is ₱0." });
     }
 
-    const exist = await Payout.find({owner: new mongoose.Types.ObjectId(id), type: type, status: "processing"})
-    .then(data => data)
-
-    if (exist.length > 0){
-        return res.status(400).json({ message: "failed", data: "There's an existing request! Please wait for it to be processed before requesting another payout." })
+    if (!allowedBanks.includes(paymentmethod.toUpperCase())) {
+        return res.status(400).json({
+            message: "failed",
+            data: `Invalid payment method. Allowed methods are: Gcash, GoTyme, and the following banks: ${allowedBanks.join(", ")}.`
+        });
     }
 
-    const wallet = await Userwallets.findOne({owner: new mongoose.Types.ObjectId(id), type: type})
-    .then(data => data)
-    .catch(err => {
-        console.log(`There's a problem getting leaderboard data ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })
 
-    if (payoutvalue > wallet.amount){
-        return res.status(400).json({ message: "failed", data: "The amount is greater than your wallet balance" })
+    const maintenances = await Maintenance.findOne({ type: "payout" }).then((data) => data);
+
+    if (maintenances.value == "1") {
+        return res.status(400).json({ message: "failed", data: "Cashout is available only in " });
     }
 
-    await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: {amount: -payoutvalue}})
-    .catch(err => {
-        console.log(`There's a problem deducting payout value for ${username} with value ${payoutvalue}. Error: ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })
+    const exist = await Payout.find({
+        owner: new mongoose.Types.ObjectId(id),
+        type: type,
+        status: "processing"
+    }).then((data) => data);
 
-    await Payout.create({owner: new mongoose.Types.ObjectId(id), status: "processing", value: payoutvalue, type: type, paymentmethod: paymentmethod, accountname: accountname, accountnumber: accountnumber})
-    .catch(async err => {
+    if (exist.length > 0) {
+        return res.status(400).json({
+            message: "failed",
+            data: "There's an existing request! Please wait for it to be processed before requesting another payout."
+        });
+    }
 
-        await Userwallets.findOneAndUpdate({owner: new mongoose.Types.ObjectId(id), type: type}, {$inc: {amount: payoutvalue}})
-        .catch(err => {
-            console.log(`There's a problem getting leaderboard data ${err}`)
-            return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-        })
+    const wallet = await Userwallets.findOne({ owner: new mongoose.Types.ObjectId(id), type: type })
+        .then((data) => data)
+        .catch((err) => {
+            console.log(`There's a problem getting leaderboard data ${err}`);
+            return res.status(400).json({
+                message: "bad-request",
+                data: "There's a problem with the server! Please contact customer support for more details."
+            });
+        });
 
-        console.log(`There's a problem getting leaderboard data ${err}`)
-        return res.status(400).json({ message: "bad-request", data: "There's a problem with the server! Please contact customer support for more details." })
-    })
+    if (payoutvalue > wallet.amount) {
+        return res.status(400).json({
+            message: "failed",
+            data: "The amount is greater than your wallet balance"
+        });
+    }
 
-    return res.json({message: "success"})
-}
+    await Userwallets.findOneAndUpdate(
+        { owner: new mongoose.Types.ObjectId(id), type: type },
+        { $inc: { amount: -payoutvalue } }
+    ).catch((err) => {
+        console.log(`There's a problem deducting payout value for ${username} with value ${payoutvalue}. Error: ${err}`);
+        return res.status(400).json({
+            message: "bad-request",
+            data: "There's a problem with the server! Please contact customer support for more details."
+        });
+    });
 
+    await Payout.create({
+        owner: new mongoose.Types.ObjectId(id),
+        status: "processing",
+        value: payoutvalue,
+        type: type,
+        paymentmethod: paymentmethod,
+        accountname: accountname,
+        accountnumber: accountnumber
+    }).catch(async (err) => {
+        await Userwallets.findOneAndUpdate(
+            { owner: new mongoose.Types.ObjectId(id), type: type },
+            { $inc: { amount: payoutvalue } }
+        ).catch((err) => {
+            console.log(`There's a problem getting leaderboard data ${err}`);
+            return res.status(400).json({
+                message: "bad-request",
+                data: "There's a problem with the server! Please contact customer support for more details."
+            });
+        });
+
+        console.log(`There's a problem getting leaderboard data ${err}`);
+        return res.status(400).json({
+            message: "bad-request",
+            data: "There's a problem with the server! Please contact customer support for more details."
+        });
+    });
+
+    return res.json({ message: "success" });
+};
 exports.getrequesthistoryplayer = async (req, res) => {
     const {id, username} = req.user
     const {page, limit} = req.query

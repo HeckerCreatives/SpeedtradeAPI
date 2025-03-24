@@ -144,6 +144,7 @@ exports.buyminer = async (req, res) => {
     const finalprice = miner.profit * adjustedProfit
 
 
+
     const buy = await reducewallet("creditwallet", priceminer, id)
 
     if (buy != "success"){
@@ -156,7 +157,10 @@ exports.buyminer = async (req, res) => {
         return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
     }
     
-    
+    // get the profit by minus the price miner to the total profit
+
+    const totalprofit = (priceminer * finalprice)
+
     if(miner.isBuyonetakeone == '1'){
         await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: finalprice, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
         .catch(err => {
@@ -169,16 +173,17 @@ exports.buyminer = async (req, res) => {
 
         await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
 
-        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: finalprice, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+        // use new profit for the second miner
+        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: 0, price: totalprofit, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
         .catch(err => {
     
             console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
     
             return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
         })
-        const inventoryhistory1 = await saveinventoryhistory(id, miner.type, priceminer, `Buy ${miner.name} buy one take one`)
+        const inventoryhistory1 = await saveinventoryhistory(id, miner.type, totalprofit, `Buy ${miner.name} buy one take one`)
 
-        await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
+        await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, totalprofit)
     } else {
 
         await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: finalprice, price: priceminer, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})

@@ -176,17 +176,17 @@ exports.buyminer = async (req, res) => {
 
         await addanalytics(id, inventoryhistory.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, priceminer)
 
-        // // use new profit for the second miner
-        // await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: 0, price: 0, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
-        // .catch(err => {
+        // use new profit for the second miner
+        await Inventory.create({owner: new mongoose.Types.ObjectId(id), type: miner.type, expiration: DateTimeServerExpiration(miner.duration), profit: 0, price: 0, startdate: DateTimeServer(), name: miner.name, duration: miner.duration})
+        .catch(err => {
     
-        //     console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
+            console.log(`Failed to miner inventory data for ${username} type: ${type} b1t1: true, error: ${err}`)
     
-        //     return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
-        // })
-        // const inventoryhistory1 = await saveinventoryhistory(id, miner.type, totalprofit, `Buy ${miner.name} buy one take one`)
+            return res.status(400).json({ message: 'failed', data: `There's a problem with your account. Please contact customer support for more details` })
+        })
+        const inventoryhistory1 = await saveinventoryhistory(id, miner.type, 0, `Buy ${miner.name} buy one take one`)
 
-        // await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, totalprofit)
+        await addanalytics(id, inventoryhistory1.data.transactionid, `Buy ${miner.name} buy one take one`, `User ${username} bought ${miner.type}`, 0)
     
     } else {
 

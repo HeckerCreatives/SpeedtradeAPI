@@ -20,7 +20,9 @@ exports.requestpayout = async (req, res) => {
         "EASTWEST",
         "CHINABANK",
         "UNION BANK",
-        "SECURITY BANK"
+        "SECURITY BANK",
+        "GCASH",
+        "GOTYME"
     ];
 
     if (payoutvalue < 500) {
